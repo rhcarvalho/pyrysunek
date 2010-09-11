@@ -6,17 +6,22 @@ from OpenGL.GLUT import *
 class TestToolbar(unittest.TestCase):
     def setUp(self):
         self.app = rysunek.App()
-        self.toolbar = self.app.toolbar
+        
+    def testDefaults(self):
+        selected_tool = self.app.selected_tool
+        line_size = self.app.line_size
+        self.assertEqual(selected_tool, self.app.toolbar.SELECTION_TOOL)
+        self.assertEqual(line_size, self.app.LINE_SIZE_THIN)
 
     def testActivateTool(self):
         tools = {
-            (0, 0): self.toolbar.SELECTION_TOOL,
-            (64, 0): self.toolbar.RECTANGLE_TOOL,
-            (128, 0): self.toolbar.ELLIPSE_TOOL,
-            (192, 0): self.toolbar.LINE_TOOL,
-            (282, 0): self.toolbar.RESIZE_TOOL,
-            (352, 0): self.toolbar.MOVE_TOOL,
-            (416, 0): self.toolbar.DELETE_TOOL,
+            (0, 0): self.app.toolbar.SELECTION_TOOL,
+            (64, 0): self.app.toolbar.RECTANGLE_TOOL,
+            (128, 0): self.app.toolbar.ELLIPSE_TOOL,
+            (192, 0): self.app.toolbar.LINE_TOOL,
+            (282, 0): self.app.toolbar.RESIZE_TOOL,
+            (352, 0): self.app.toolbar.MOVE_TOOL,
+            (416, 0): self.app.toolbar.DELETE_TOOL,
         }
         for coord, tool in tools.iteritems():
             self.app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, *coord)
