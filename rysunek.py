@@ -24,8 +24,8 @@ class App(object):
             self.__objects.append(None)
         if self.DEBUG:
             print button, state, x, y
-            print "Selected tool:", self.getSelectedTool()
-            print "Line size:", self.getLineSize()
+            print "Selected tool:", self.selected_tool
+            print "Line size:", self.line_size
 
     def getObjects(self):
         return self.__objects
