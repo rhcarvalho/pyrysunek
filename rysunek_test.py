@@ -9,12 +9,12 @@ class TestToolbar(unittest.TestCase):
         toolbar = app.getToolbar()
         tools = {
             (0, 0): toolbar.SELECTION_TOOL,
-            (65, 0): toolbar.RECTANGLE_TOOL,
-            (129, 0): toolbar.ELLIPSE_TOOL,
-            (193, 0): toolbar.LINE_TOOL,
-            (289, 0): toolbar.RESIZE_TOOL,
-            (353, 0): toolbar.MOVE_TOOL,
-            (417, 0): toolbar.DELETE_TOOL,
+            (64, 0): toolbar.RECTANGLE_TOOL,
+            (128, 0): toolbar.ELLIPSE_TOOL,
+            (192, 0): toolbar.LINE_TOOL,
+            (282, 0): toolbar.RESIZE_TOOL,
+            (352, 0): toolbar.MOVE_TOOL,
+            (416, 0): toolbar.DELETE_TOOL,
         }
         for coord, tool in tools.iteritems():
             app.onMouseEvent(GLUT_LEFT_BUTTON, GLUT_UP, *coord)
