@@ -16,12 +16,15 @@ class App(object):
         self.DEBUG = debug
         self.__objects = []
         self.toolbar = Toolbar()
-        self.selected_tool = self.toolbar.selected_tool
         self.line_size = True
 
     def on_mouse_event(self, button, state, x, y):
-        if state == GLUT_UP and x and y:
-            self.__objects.append(None)
+        """Handle mouse events."""
+        if self.toolbar.contains(x, y):
+            self.toolbar.on_mouse_event(button, state, x, y)
+        else:
+            if state == GLUT_UP and x and y:
+                self.__objects.append(None)
         if self.DEBUG:
             print button, state, x, y
             print "Selected tool:", self.selected_tool
@@ -29,14 +32,34 @@ class App(object):
 
     def getObjects(self):
         return self.__objects
+        
+    @property
+    def selected_tool(self):
+        return self.toolbar.selected_tool
 
 
+class SelectionTool:
+    pass
+        
 class Toolbar:
-    SELECTION_TOOL = RECTANGLE_TOOL = ELLIPSE_TOOL = LINE_TOOL = \
+    SELECTION_TOOL = SelectionTool()
+    RECTANGLE_TOOL = ELLIPSE_TOOL = LINE_TOOL = \
     RESIZE_TOOL = MOVE_TOOL = DELETE_TOOL = True
 
-    selected_tool = True
-
+    def __init__(self, width=800, height=64):
+        self.selected_tool = self.SELECTION_TOOL
+        self.width = width
+        self.height = height
+        
+    def contains(self, x, y):
+        return (0 <= x < self.width) and (0 <= y < self.height)
+        
+    def on_mouse_event(self, button, state, x, y):
+        if x >= 64:
+            self.selected_tool = True
+        else:
+            self.selected_tool = self.SELECTION_TOOL
+        
 
 def init():
     "Set up several OpenGL state variables"
