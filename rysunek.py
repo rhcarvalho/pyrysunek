@@ -9,8 +9,9 @@ from sys import argv
 
 
 class App(object):
-    def __init__(self):
+    def __init__(self, debug=False):
         self.__objects = []
+        self.DEBUG = debug
 
     def getToolbar(self):
         return Toolbar()
@@ -18,16 +19,16 @@ class App(object):
     def onMouseEvent(self, button, state, x, y):
         if state == GLUT_UP and x and y:
             self.__objects.append(None)
+        if self.DEBUG:
+            print button, state, x, y
         
     def getObjects(self):
         return self.__objects
 
 class Toolbar:
-    def getButton(self, index):
-        return Button()
-        
-class Button:
-    def click(self):
+    SELECTION_TOOL = RECTANGLE_TOOL = ELLIPSE_TOOL = LINE_TOOL = \
+    RESIZE_TOOL = MOVE_TOOL = DELETE_TOOL = True
+    def getSelectedTool(self):
         return True
         
 
@@ -62,7 +63,7 @@ if __name__ == "__main__":
     glutInitWindowSize(400, 400)
     glutCreateWindow("PyRysunek")
     glutDisplayFunc(display)
-    app = App()
+    app = App(debug=True)
     glutMouseFunc(app.onMouseEvent)
     init()
     glutMainLoop()
