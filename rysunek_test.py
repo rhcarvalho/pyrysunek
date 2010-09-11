@@ -42,24 +42,24 @@ class TestToolbar(unittest.TestCase):
 
 
 class RectangleTest(unittest.TestCase):
-    def testCannotCreateEmptyRectangle(self):
+    def testCanCreateEmptyRectangle(self):
         app = rysunek.App()
-        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 0, 0) # click
-        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 0, 0) # release
-        self.assertEqual(len(app.getObjects()), 0)
+        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 80, 80) # click
+        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 80, 80) # release
+        self.assertEqual(len(app.getObjects()), 1)
 
     def testCanCreateSimpleRectangle(self):
         app = rysunek.App()
-        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 0, 0) # click
-        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 10, 10) # release
+        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 80, 80) # click
+        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 90, 90) # release
         self.assertEqual(len(app.getObjects()), 1)
 
     def testCanCreateTwoRectangles(self):
         app = rysunek.App()
-        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 10, 10) # click
-        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 20, 30) # release
-        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 40, 40) # click
-        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 50, 60) # release
+        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 80, 80) # click
+        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 90, 100) # release
+        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 110, 110) # click
+        app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 120, 130) # release
         self.assertEqual(len(app.getObjects()), 2)
 
 
