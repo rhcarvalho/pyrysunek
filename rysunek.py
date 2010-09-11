@@ -9,6 +9,9 @@ from sys import argv
 
 
 class App(object):
+    LINE_SIZE_THIN = LINE_SIZE_MEDIUM = \
+    LINE_SIZE_LARGE = LINE_SIZE_XLARGE = True
+    
     def __init__(self, debug=False):
         self.__objects = []
         self.DEBUG = debug
@@ -24,6 +27,9 @@ class App(object):
         
     def getObjects(self):
         return self.__objects
+        
+    def getLineSize(self):
+        return True
 
 class Toolbar:
     SELECTION_TOOL = RECTANGLE_TOOL = ELLIPSE_TOOL = LINE_TOOL = \

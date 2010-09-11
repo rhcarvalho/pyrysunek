@@ -4,23 +4,36 @@ from OpenGL.GLUT import *
 
 
 class TestToolbar(unittest.TestCase):
+    def setUp(self):
+        self.app = rysunek.App()
+        self.toolbar = self.app.getToolbar()
+
     def testActivateTool(self):
-        app = rysunek.App()
-        toolbar = app.getToolbar()
         tools = {
-            (0, 0): toolbar.SELECTION_TOOL,
-            (64, 0): toolbar.RECTANGLE_TOOL,
-            (128, 0): toolbar.ELLIPSE_TOOL,
-            (192, 0): toolbar.LINE_TOOL,
-            (282, 0): toolbar.RESIZE_TOOL,
-            (352, 0): toolbar.MOVE_TOOL,
-            (416, 0): toolbar.DELETE_TOOL,
+            (0, 0): self.toolbar.SELECTION_TOOL,
+            (64, 0): self.toolbar.RECTANGLE_TOOL,
+            (128, 0): self.toolbar.ELLIPSE_TOOL,
+            (192, 0): self.toolbar.LINE_TOOL,
+            (282, 0): self.toolbar.RESIZE_TOOL,
+            (352, 0): self.toolbar.MOVE_TOOL,
+            (416, 0): self.toolbar.DELETE_TOOL,
         }
         for coord, tool in tools.iteritems():
-            app.onMouseEvent(GLUT_LEFT_BUTTON, GLUT_UP, *coord)
-            selectedTool = toolbar.getSelectedTool()
+            self.app.onMouseEvent(GLUT_LEFT_BUTTON, GLUT_UP, *coord)
+            selectedTool = self.toolbar.getSelectedTool()
             self.assertEqual(selectedTool, tool)
-
+            
+    def testChangeLineSize(self):
+        sizes = {
+            0: self.app.LINE_SIZE_THIN,
+            16: self.app.LINE_SIZE_MEDIUM,
+            32: self.app.LINE_SIZE_LARGE,
+            48: self.app.LINE_SIZE_XLARGE,
+        }
+        for y, size in sizes.iteritems():
+            self.app.onMouseEvent(GLUT_LEFT_BUTTON, GLUT_UP, 512, y)
+            currentLineSize = self.app.getLineSize()
+            self.assertEqual(currentLineSize, size)
 
 class RectangleTest(unittest.TestCase):
     def testCannotCreateEmptyRectangle(self):
