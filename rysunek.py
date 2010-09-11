@@ -11,32 +11,32 @@ from sys import argv
 class App(object):
     LINE_SIZE_THIN = LINE_SIZE_MEDIUM = \
     LINE_SIZE_LARGE = LINE_SIZE_XLARGE = True
-    
-    def __init__(self, debug=False):
-        self.__objects = []
-        self.DEBUG = debug
 
-    def getToolbar(self):
-        return Toolbar()
-        
-    def onMouseEvent(self, button, state, x, y):
+    def __init__(self, debug=False):
+        self.DEBUG = debug
+        self.__objects = []
+        self.toolbar = Toolbar()
+        self.selected_tool = self.toolbar.selected_tool
+        self.line_size = True
+
+    def on_mouse_event(self, button, state, x, y):
         if state == GLUT_UP and x and y:
             self.__objects.append(None)
         if self.DEBUG:
             print button, state, x, y
-        
+            print "Selected tool:", self.getSelectedTool()
+            print "Line size:", self.getLineSize()
+
     def getObjects(self):
         return self.__objects
-        
-    def getLineSize(self):
-        return True
+
 
 class Toolbar:
     SELECTION_TOOL = RECTANGLE_TOOL = ELLIPSE_TOOL = LINE_TOOL = \
     RESIZE_TOOL = MOVE_TOOL = DELETE_TOOL = True
-    def getSelectedTool(self):
-        return True
-        
+
+    selected_tool = True
+
 
 def init():
     "Set up several OpenGL state variables"
@@ -60,16 +60,16 @@ def display():
     glEnd()
     # Flush and swap buffers
     glutSwapBuffers()
-    
+
 
 if __name__ == "__main__":
     # Main Program
-    glutInit(argv) 
+    glutInit(argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
     glutInitWindowSize(400, 400)
     glutCreateWindow("PyRysunek")
     glutDisplayFunc(display)
     app = App(debug=True)
-    glutMouseFunc(app.onMouseEvent)
+    glutMouseFunc(app.on_mouse_event)
     init()
     glutMainLoop()
