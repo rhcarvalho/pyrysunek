@@ -38,12 +38,20 @@ class App(object):
         return self.toolbar.selected_tool
 
 
-class SelectionTool:
+class Tool:
+    def __repr__(self):
+        return "<%s>" % self.__class__.__name__
+
+class SelectionTool(Tool):
+    pass
+        
+class RectangleTool(Tool):
     pass
         
 class Toolbar:
     SELECTION_TOOL = SelectionTool()
-    RECTANGLE_TOOL = ELLIPSE_TOOL = LINE_TOOL = \
+    RECTANGLE_TOOL = RectangleTool()
+    ELLIPSE_TOOL = LINE_TOOL = \
     RESIZE_TOOL = MOVE_TOOL = DELETE_TOOL = True
 
     def __init__(self, width=800, height=64):
