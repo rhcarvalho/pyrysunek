@@ -1,53 +1,73 @@
-"""A simple OpenGL program in Python.
-Draws a white square on a black background
-"""
+# -*- coding: utf-8 -*-
 
-import OpenGL
-from OpenGL.GLUT import *
+# PyRysunek is a simple vector drawing program using OpenGL.
+# http://launchpad.net/pyrysunek
+
 from OpenGL.GL import *
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
+
 import sys
 
 
 class App(object):
+
+    """A simple OpenGL drawing application."""
+
     LINE_SIZE_THIN = LINE_SIZE_MEDIUM = \
     LINE_SIZE_LARGE = LINE_SIZE_XLARGE = True
 
     def __init__(self, debug=False):
+        """Create an instance of a PyRysunek application.
+
+        Keyword arguments:
+        debug -- show debug information in the console during program execution
+        """
         self.DEBUG = debug
         self.__objects = []
         self.toolbar = Toolbar()
         self.line_size = True
-        
+
         self._init_opengl()
-        
+
     def _init_opengl(self):
+        """OpenGL initialization commands."""
         glutInit(sys.argv)
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
-        glutInitWindowSize(400, 400)
+        glutInitWindowSize(800, 500)
+        glutInitWindowPosition(150, 50)
         glutCreateWindow("PyRysunek")
-        
+
+        # Assign callback functions
         glutDisplayFunc(self.display)
+        glutReshapeFunc(self.reshape)
         glutMouseFunc(self.on_mouse_event)
-        
-        # Background color
+
+        # Set background color
         glClearColor(1.0, 1.0, 1.0, 0.0)
-        # Projection matrix
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0)
-    
+
     def display(self):
-        "Does the actual drawing"
+        """Callback to draw the application in the screen."""
         # Clear frame buffer
         glClear(GL_COLOR_BUFFER_BIT)
-        
+
         self.toolbar.draw()
-        
+
         # Flush and swap buffers
         glutSwapBuffers()
-        
+
+    def reshape(self, w, h):
+        """Callback to adjust the coordinate system whenever a window is
+        created, moved or resized.
+        """
+        glViewport(0, 0, w, h)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        # Define left, right, bottom, top coordinates
+        gluOrtho2D(0.0, w, h, 0.0)
+
     def on_mouse_event(self, button, state, x, y):
-        """Handle mouse events."""
+        """Callback to handle mouse events."""
         if self.toolbar.contains(x, y):
             self.toolbar.on_mouse_event(button, state, x, y)
         else:
@@ -60,7 +80,7 @@ class App(object):
 
     def getObjects(self):
         return self.__objects
-        
+
     @property
     def selected_tool(self):
         return self.toolbar.selected_tool
@@ -72,10 +92,10 @@ class Tool:
 
 class SelectionTool(Tool):
     pass
-        
+
 class RectangleTool(Tool):
     pass
-        
+
 class Toolbar:
     SELECTION_TOOL = SelectionTool()
     RECTANGLE_TOOL = RectangleTool()
@@ -86,24 +106,29 @@ class Toolbar:
         self.selected_tool = self.SELECTION_TOOL
         self.width = width
         self.height = height
-        
+
     def contains(self, x, y):
         return (0 <= x < self.width) and (0 <= y < self.height)
-        
+
     def on_mouse_event(self, button, state, x, y):
         if x >= 64:
             self.selected_tool = True
         else:
             self.selected_tool = self.SELECTION_TOOL
-    
+
     def draw(self):
-        # Set draw color
-        glColor3f(1.0, 0.0, 0.0)
-        # Draw square
-        glBegin(GL_POLYGON)
-        for v in ((0, 0), (0.1, 0), (0.1, 0.1), (0, 0.1)):
-            glVertex2fv(v)
-        glEnd()
+        """Draw the toolbar."""
+        number_of_buttons = 8
+        colors = (
+            (1.0, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (1.0, 1.0, 0.0),
+            (0.5, 0.7, 0.6),
+        )
+        for i in range(number_of_buttons):
+            glColor3fv(colors[i % len(colors)])
+            glRectf(64.0 * i, 0.0, 64.0 * (i + 1), 64.0)
+
 
 if __name__ == "__main__":
     # Main Program
