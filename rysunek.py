@@ -17,7 +17,7 @@ class App(object):
     LINE_SIZE_THIN = LINE_SIZE_MEDIUM = \
     LINE_SIZE_LARGE = LINE_SIZE_XLARGE = True
 
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, width=800, height=500):
         """Create an instance of a PyRysunek application.
 
         Keyword arguments:
@@ -27,6 +27,8 @@ class App(object):
         self.__objects = []
         self.toolbar = Toolbar()
         self.line_size = True
+        self.width = width
+        self.height = height
 
         self._init_opengl()
 
@@ -34,7 +36,7 @@ class App(object):
         """OpenGL initialization commands."""
         glutInit(sys.argv)
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
-        glutInitWindowSize(800, 500)
+        glutInitWindowSize(self.width, self.height)
         glutInitWindowPosition(150, 50)
         glutCreateWindow("PyRysunek")
 
@@ -51,7 +53,7 @@ class App(object):
         # Clear frame buffer
         glClear(GL_COLOR_BUFFER_BIT)
 
-        self.toolbar.draw()
+        self.toolbar.draw(topy=self.height)
 
         # Flush and swap buffers
         glutSwapBuffers()
@@ -60,11 +62,12 @@ class App(object):
         """Callback to adjust the coordinate system whenever a window is
         created, moved or resized.
         """
+        self.width, self.height = w, h
         glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         # Define left, right, bottom, top coordinates
-        gluOrtho2D(0.0, w, h, 0.0)
+        gluOrtho2D(0.0, w, 0.0, h)
 
     def on_mouse_event(self, button, state, x, y):
         """Callback to handle mouse events."""
@@ -116,7 +119,7 @@ class Toolbar:
         else:
             self.selected_tool = self.SELECTION_TOOL
 
-    def draw(self):
+    def draw(self, topx=0, topy=0, button_size=64):
         """Draw the toolbar."""
         number_of_buttons = 8
         colors = (
@@ -127,7 +130,8 @@ class Toolbar:
         )
         for i in range(number_of_buttons):
             glColor3fv(colors[i % len(colors)])
-            glRectf(64.0 * i, 0.0, 64.0 * (i + 1), 64.0)
+            glRectf(topx + button_size * i, topy - button_size,
+                    topx + button_size * (i + 1), topy)
 
 
 if __name__ == "__main__":
