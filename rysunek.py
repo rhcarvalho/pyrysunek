@@ -89,7 +89,7 @@ class App(object):
         return self.toolbar.selected_tool
 
 
-class Tool:
+class Tool(object):
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
 
@@ -99,47 +99,90 @@ class SelectionTool(Tool):
 class RectangleTool(Tool):
     pass
 
+class EllipseTool(Tool):
+    pass
 
-class Button:
+class LineTool(Tool):
+    pass
+
+class ResizeTool(Tool):
+    pass
+
+class MoveTool(Tool):
+    pass
+
+class DeleteTool(Tool):
+    pass
+
+
+class BaseGraphic(object):
     def __init__(self, x, y, width, height):
-        print x, y, width, height
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        
+
     def __contains__(self, (x, y)):
         return (self.x <= x < self.width) and (self.y <= y < self.height)
 
+
+class Button(BaseGraphic):
     def draw(self):
         glRectf(self.x, self.y, self.x + self.width, self.y + self.height)
-        
+
+
 class SelectionButton(Button, SelectionTool):
     pass
-    
-class Toolbar:
-    SELECTION_TOOL = SelectionTool()
-    RECTANGLE_TOOL = RectangleTool()
-    ELLIPSE_TOOL = LINE_TOOL = \
-    RESIZE_TOOL = MOVE_TOOL = DELETE_TOOL = True
 
+
+class RectangleButton(Button, RectangleTool):
+    pass
+
+
+class EllipseButton(Button, EllipseTool):
+    pass
+
+
+class LineButton(Button, LineTool):
+    pass
+
+
+class ResizeButton(Button, ResizeTool):
+    pass
+
+
+class MoveButton(Button, MoveTool):
+    pass
+
+
+class DeleteButton(Button, DeleteTool):
+    pass
+
+
+class Toolbar:
     def __init__(self, x, y, width, height):
-        self.selected_tool = self.SELECTION_TOOL
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.__buttons = []
-        self.add_button(SelectionButton)
+        self.add_buttons(SelectionButton, RectangleButton, EllipseButton,
+            LineButton, ResizeButton, MoveButton, DeleteButton)
+        self.selected_tool = self.__buttons[0]
 
     def contains(self, x, y):
         return (0 <= x < self.width) and (0 <= y < self.height)
 
     def add_button(self, button_type):
-        self.__buttons.append(
-            button_type(self.x, self.y, self.height, self.height)
-        )
-    
+        size = self.height
+        x = self.x + size * len(self.__buttons)
+        y = self.y
+        self.__buttons.append(button_type(x, y, size, size))
+
+    def add_buttons(self, *button_types):
+        for button_type in button_types:
+            self.add_button(button_type)
+
     def on_mouse_event(self, button, state, x, y):
         if x >= 64:
             self.selected_tool = True
