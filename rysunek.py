@@ -25,7 +25,7 @@ class App(object):
         """
         self.DEBUG = debug
         self.__objects = []
-        self.toolbar = Toolbar()
+        self.toolbar = Toolbar(0, height-64, width, 64)
         self.line_size = True
         self.width = width
         self.height = height
@@ -53,7 +53,7 @@ class App(object):
         # Clear frame buffer
         glClear(GL_COLOR_BUFFER_BIT)
 
-        self.toolbar.draw(topy=self.height)
+        self.toolbar.draw()
 
         # Flush and swap buffers
         glutSwapBuffers()
@@ -99,39 +99,64 @@ class SelectionTool(Tool):
 class RectangleTool(Tool):
     pass
 
+
+class Button:
+    def __init__(self, x, y, width, height):
+        print x, y, width, height
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        
+    def __contains__(self, (x, y)):
+        return (self.x <= x < self.width) and (self.y <= y < self.height)
+
+    def draw(self):
+        glRectf(self.x, self.y, self.x + self.width, self.y + self.height)
+        
+class SelectionButton(Button, SelectionTool):
+    pass
+    
 class Toolbar:
     SELECTION_TOOL = SelectionTool()
     RECTANGLE_TOOL = RectangleTool()
     ELLIPSE_TOOL = LINE_TOOL = \
     RESIZE_TOOL = MOVE_TOOL = DELETE_TOOL = True
 
-    def __init__(self, width=800, height=64):
+    def __init__(self, x, y, width, height):
         self.selected_tool = self.SELECTION_TOOL
+        self.x = x
+        self.y = y
         self.width = width
         self.height = height
+        self.__buttons = []
+        self.add_button(SelectionButton)
 
     def contains(self, x, y):
         return (0 <= x < self.width) and (0 <= y < self.height)
 
+    def add_button(self, button_type):
+        self.__buttons.append(
+            button_type(self.x, self.y, self.height, self.height)
+        )
+    
     def on_mouse_event(self, button, state, x, y):
         if x >= 64:
             self.selected_tool = True
         else:
             self.selected_tool = self.SELECTION_TOOL
 
-    def draw(self, topx=0, topy=0, button_size=64):
+    def draw(self):
         """Draw the toolbar."""
-        number_of_buttons = 8
         colors = (
             (1.0, 0.0, 0.0),
             (0.0, 1.0, 0.0),
             (1.0, 1.0, 0.0),
             (0.5, 0.7, 0.6),
         )
-        for i in range(number_of_buttons):
+        for i in range(len(self.__buttons)):
             glColor3fv(colors[i % len(colors)])
-            glRectf(topx + button_size * i, topy - button_size,
-                    topx + button_size * (i + 1), topy)
+            self.__buttons[i].draw()
 
 
 if __name__ == "__main__":
