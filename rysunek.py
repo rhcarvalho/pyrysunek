@@ -71,18 +71,16 @@ class App(object):
 
     def on_mouse_event(self, button, state, x, y):
         """Callback to handle mouse events."""
-        if self.toolbar.contains(x, y):
-            self.toolbar.on_mouse_event(button, state, x, y)
-        else:
-            if state == GLUT_UP and x and y:
-                self.__objects.append(None)
         if self.DEBUG:
             print button, state, x, y
             print "Selected tool:", self.selected_tool
             print "Line size:", self.line_size
-
-    def getObjects(self):
-        return self.__objects
+            
+        if (x, y) in self.toolbar:
+            self.toolbar.on_mouse_event(button, state, x, y)
+        else:
+            if state == GLUT_UP and x and y:
+                self.__objects.append(None)
 
     @property
     def selected_tool(self):
@@ -159,19 +157,13 @@ class DeleteButton(Button, DeleteTool):
     pass
 
 
-class Toolbar:
+class Toolbar(BaseGraphic):
     def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        super(Toolbar, self).__init__(x, y, width, height)
         self.__buttons = []
         self.add_buttons(SelectionButton, RectangleButton, EllipseButton,
             LineButton, ResizeButton, MoveButton, DeleteButton)
         self.selected_tool = self.__buttons[0]
-
-    def contains(self, x, y):
-        return (0 <= x < self.width) and (0 <= y < self.height)
 
     def add_button(self, button_type):
         size = self.height
