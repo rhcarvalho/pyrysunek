@@ -3,6 +3,16 @@
 # PyRysunek is a simple vector drawing program using OpenGL.
 # http://launchpad.net/pyrysunek
 
+# TODO:
+# draw rectangles
+# draw ellipses
+# select tools
+# draw lines
+# move objects
+# resize objects
+# change colors
+# change line size
+
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
