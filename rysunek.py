@@ -4,7 +4,6 @@
 # http://launchpad.net/pyrysunek
 
 # TODO:
-# draw rectangles
 # draw ellipses
 # select tools
 # draw lines
@@ -12,6 +11,7 @@
 # resize objects
 # change colors
 # change line size
+# refine toolbar appearance
 
 import sys
 
@@ -35,7 +35,7 @@ class App(object):
         """
         self.DEBUG = debug
         self.__objects = []
-        self.toolbar = Toolbar(0, height-64, width, 64)
+        self.toolbar = Toolbar(0, 0, width, 64)
         self.line_size = True
         self.width = width
         self.height = height
