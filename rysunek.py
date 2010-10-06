@@ -13,11 +13,31 @@
 # change line size
 # refine toolbar appearance
 
+from collections import namedtuple
+from math import hypot
 import sys
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+
+
+class Point(namedtuple('Point', 'x y')):
+    __slots__ = ()
+    
+    @property
+    def hypot(self):
+        return hypot(self.x, self.y)
+            
+    def __add__(self, other):
+        return Point.__new__(Point, self.x + other.x, self.y + other.y)
+    def __sub__(self, other):
+        return Point.__new__(Point, self.x - other.x, self.y - other.y)
+    def __lt__(self, other):
+        return self.hypot < other.hypot
+        
+    def __and__(self, other):
+        return tuple.__add__(self, other)
 
 
 class App(object):
@@ -35,7 +55,7 @@ class App(object):
         """
         self.DEBUG = debug
         self.__objects = []
-        self.toolbar = Toolbar(0, 0, width, 64)
+        self.toolbar = Toolbar((0, 0), (width, 64))
         self.line_size = True
         self.width = width
         self.height = height
@@ -93,7 +113,7 @@ class App(object):
             self.toolbar.mouse(button, state, x, y)
         else:
             if state == GLUT_DOWN:
-                self.__objects.append(Rectangle(x, y, x, y))
+                self.__objects.append(Rectangle((x, y), (x, y)))
                 
             elif state == GLUT_UP:
                 self.__objects[-1].done = True
@@ -107,8 +127,7 @@ class App(object):
     def motion(self, x, y):
         # update last object
         obj = self.__objects[-1]
-        obj.width = x
-        obj.height = y
+        obj.bottom_right = Point(x, y)
 
     def keyboard(self, key, x, y):
         if key == "\x1b":
@@ -144,24 +163,23 @@ class MoveTool(Tool):
 class DeleteTool(Tool):
     pass
 
-
+    
 class BaseGraphic(object):
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+    def __init__(self, top_left, bottom_right):
+        # Sort to make sure the coordinates are not inverted
+        coordinates = (Point._make(top_left), Point._make(bottom_right))
+        self.top_left, self.bottom_right = sorted(coordinates)
 
     def __contains__(self, (x, y)):
-        return (self.x <= x < self.width) and (self.y <= y < self.height)
+        return (self.top_left.x <= x < self.bottom_right.x) and (self.top_left.y <= y < self.bottom_right.y)
         
     def __repr__(self):
-        return "<%s x=%s y=%s w=%s h=%s>" % (self.__class__.__name__, self.x, self.y, self.width, self.height)
+        return "<%s top_left=%s bottom_right=%s>" % (self.__class__.__name__, self.top_left, self.bottom_right)
 
 
 class Button(BaseGraphic):
     def draw(self):
-        glRectf(self.x, self.y, self.x + self.width, self.y + self.height)
+        glRectf(self.top_left.x, self.top_left.y, self.top_left.x + self.bottom_right.x, self.top_left.y + self.bottom_right.y)
 
 
 class SelectionButton(Button, SelectionTool):
@@ -193,8 +211,12 @@ class DeleteButton(Button, DeleteTool):
 
 
 class Toolbar(BaseGraphic):
-    def __init__(self, x, y, width, height):
-        super(Toolbar, self).__init__(x, y, width, height)
+    def __init__(self, top_left, bottom_right):
+        super(Toolbar, self).__init__(top_left, bottom_right)
+        
+        self.x, self.y = top_left
+        self.width, self.height = bottom_right
+        
         self.__buttons = []
         self.add_buttons(SelectionButton, RectangleButton, EllipseButton,
             LineButton, ResizeButton, MoveButton, DeleteButton)
@@ -204,7 +226,7 @@ class Toolbar(BaseGraphic):
         size = self.height
         x = self.x + size * len(self.__buttons)
         y = self.y
-        self.__buttons.append(button_type(x, y, size, size))
+        self.__buttons.append(button_type((x, y), (size, size)))
 
     def add_buttons(self, *button_types):
         for button_type in button_types:
@@ -230,8 +252,8 @@ class Toolbar(BaseGraphic):
 
 
 class Rectangle(BaseGraphic):
-    def __init__(self, *args):
-        super(Rectangle, self).__init__(*args)
+    def __init__(self, top_left, bottom_right):
+        super(Rectangle, self).__init__(top_left, bottom_right)
         #self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.color = (0.08, 0.08, 0.54, 1.0) # Force color
         self.done = False
@@ -244,17 +266,48 @@ class Rectangle(BaseGraphic):
             inverse_color = (1-r, 1-g, 1-b, a)
             glColor4fv(inverse_color)
             glPushMatrix()
-            glTranslatef(self.x, self.y, 0)
+            glTranslatef(self.top_left.x, self.top_left.y, 0)
             gluDisk(quadratic, 0, 3, 32, 32)
             glPopMatrix()
             glPushMatrix()
-            glTranslatef(self.width, self.height, 0)
+            glTranslatef(self.bottom_right.x, self.bottom_right.y, 0)
             gluDisk(quadratic, 0, 3, 32, 32)
             glPopMatrix()
         glColor4fv(self.color)
-        glRectf(self.x, self.y, self.width, self.height)
+        glRectf(*(self.top_left & self.bottom_right))
 
 
+class Ellipse(BaseGraphic):
+    def __init__(self, top_left, bottom_right):
+        super(Ellipse, self).__init__(top_left, bottom_right)
+        #self.color = glGetFloatv(GL_CURRENT_COLOR)
+        self.color = (0.78, 0.78, 0.35, 1.0) # Force color
+        self.done = False
+        
+    def draw(self):
+        quadratic = gluNewQuadric()
+        if not self.done:
+            # draw guides in the first and last corners
+            r, g, b, a = self.color
+            inverse_color = (1-r, 1-g, 1-b, a)
+            glColor4fv(inverse_color)
+            glPushMatrix()
+            glTranslatef(self.top_left.x, self.top_left.y, 0)
+            gluDisk(quadratic, 0, 3, 32, 32)
+            glPopMatrix()
+            glPushMatrix()
+            glTranslatef(self.bottom_right.x, self.bottom_right.y, 0)
+            gluDisk(quadratic, 0, 3, 32, 32)
+            glPopMatrix()
+        glColor4fv(self.color)
+        glPushMatrix()
+        radius = 20
+        glTranslatef(self.top_left.x+radius, self.top_left.y+radius, 0)
+        gluDisk(quadratic, 0, 2*radius, 32, 32)
+        glScale(2.0, 1.2, 1.0)
+        glPopMatrix()
+        
+        
 if __name__ == "__main__":
     # Main Program
     app = App(debug=True)

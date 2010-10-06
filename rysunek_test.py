@@ -1,5 +1,6 @@
 import unittest
 import rysunek
+from rysunek import Point
 from OpenGL.GLUT import *
 
 
@@ -61,6 +62,26 @@ class RectangleTest(unittest.TestCase):
         app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_DOWN, 110, 110) # click
         app.on_mouse_event(GLUT_LEFT_BUTTON, GLUT_UP, 120, 130) # release
         self.assertEqual(len(app.getObjects()), 2)
+
+
+class PointTests(unittest.TestCase):
+    def test_arithmetic(self):
+        self.assertEqual(Point(4, 5) + Point(1, -3), Point(5, 2))
+        self.assertEqual(Point(4, 5) - Point(1, -3), Point(3, 8))
+        
+    def test_comparison(self):
+        self.assertTrue(Point(1, 1) < Point(2, 3))
+        self.assertTrue(Point(10, 1) < Point(5, 9))
+        self.assertTrue(Point(10, 5) > Point(5, 6))
+        self.assertTrue(Point(1, 5) == Point(1, 5))
+        self.assertTrue(Point(2, 5) != Point(1, 5))
+        self.assertTrue(Point(1, 1) <= Point(1, 1))
+        self.assertTrue(Point(0, 1) <= Point(1, 1))
+        self.assertTrue(Point(5, 6) >= Point(5, 6))
+        self.assertTrue(Point(10, 5) >= Point(5, 6))
+        
+    def test_aggregation(self):
+        self.assertTrue(Point(4, 6) & Point(2, 3), (4, 6, 2, 3))
 
 
 if __name__ == "__main__":
