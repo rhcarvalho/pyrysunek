@@ -1,6 +1,6 @@
 import unittest
 import rysunek
-from rysunek import Point
+from geometry import Point
 from OpenGL.GLUT import *
 
 
