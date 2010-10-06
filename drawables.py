@@ -4,7 +4,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-from geometry import BaseGraphic
+from geometry import BaseGraphic, Point
 
 
 class Rectangle(BaseGraphic):
@@ -31,6 +31,12 @@ class Rectangle(BaseGraphic):
             glPopMatrix()
         glColor4fv(self.color)
         glRectf(*(self.top_left & self.bottom_right))
+        
+    def motion(self, x, y):
+        if not self.done:
+            # Note that the sorting done in BaseGraphic__init__
+            # is worth nothing...
+            self.bottom_right = Point(x, y)
 
 
 class Ellipse(BaseGraphic):

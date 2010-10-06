@@ -10,7 +10,7 @@ from tools import *
 
 class Button(BaseGraphic):
     def draw(self):
-        glRectf(self.top_left.x, self.top_left.y, self.top_left.x + self.bottom_right.x, self.top_left.y + self.bottom_right.y)
+        glRectf(*(self.top_left & self.bottom_right))
 
 
 class SelectionButton(Button, SelectionTool):

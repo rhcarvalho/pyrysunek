@@ -20,7 +20,6 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 from drawables import *
-from geometry import Point
 from toolbar import Toolbar
 
 
@@ -39,7 +38,7 @@ class App(object):
         """
         self.DEBUG = debug
         self.__objects = []
-        self.toolbar = Toolbar((0, 0), (width, 64))
+        self.toolbar = Toolbar(0, 0, width, 64)
         self.width = width
         self.height = height
 
@@ -98,7 +97,7 @@ class App(object):
             if state == GLUT_DOWN:
                 self.__objects.append(Rectangle((x, y), (x, y)))
                 
-            elif state == GLUT_UP:
+            elif state == GLUT_UP and self.__objects:
                 self.__objects[-1].done = True
         
         if self.DEBUG:
@@ -107,8 +106,9 @@ class App(object):
     
     def motion(self, x, y):
         # update last object
-        obj = self.__objects[-1]
-        obj.bottom_right = Point(x, y)
+        if self.__objects:
+            obj = self.__objects[-1]
+            obj.motion(x, y)
 
     def keyboard(self, key, x, y):
         if key == "\x1b":
