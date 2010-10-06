@@ -4,8 +4,7 @@
 # http://launchpad.net/pyrysunek
 
 # TODO:
-# draw ellipses
-# select tools
+# visually identify tools
 # draw lines
 # move objects
 # resize objects
@@ -19,7 +18,6 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-from drawables import *
 from toolbar import Toolbar
 
 
@@ -37,7 +35,7 @@ class App(object):
         debug -- show debug information in the console during program execution
         """
         self.DEBUG = debug
-        self.__objects = []
+        self._objects = []
         self.toolbar = Toolbar(0, 0, width, 64)
         self.width = width
         self.height = height
@@ -69,7 +67,7 @@ class App(object):
         # Clear frame buffer
         glClear(GL_COLOR_BUFFER_BIT)
         
-        for obj in self.__objects:
+        for obj in self._objects:
             obj.draw()
 
         # Make sure that toolbar is on top of everything
@@ -95,20 +93,18 @@ class App(object):
             self.toolbar.mouse(button, state, x, y)
         else:
             if state == GLUT_DOWN:
-                self.__objects.append(Ellipse((x, y), (x, y)))
+                self.toolbar.current_tool.mouse_down(x, y, self._objects)
                 
-            elif state == GLUT_UP and self.__objects:
-                self.__objects[-1].done = True
+            elif state == GLUT_UP:
+                self.toolbar.current_tool.mouse_up(x, y, self._objects)
         
         if self.DEBUG:
             print button, state, x, y
-            print "Objects:", self.__objects
+            print "Current tool:", self.toolbar.current_tool
+            print "Objects:", self._objects
     
     def motion(self, x, y):
-        # update last object
-        if self.__objects:
-            obj = self.__objects[-1]
-            obj.motion(x, y)
+        self.toolbar.current_tool.mouse_move(x, y, self._objects)
 
     def keyboard(self, key, x, y):
         if key == "\x1b":

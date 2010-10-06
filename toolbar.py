@@ -15,6 +15,7 @@ class Toolbar(object):
         self._buttons = []
         self.add_buttons(SelectionButton, RectangleButton, EllipseButton,
             LineButton, ResizeButton, MoveButton, DeleteButton)
+        self.current_tool = self._buttons[1]
 
     def __contains__(self, (x, y)):
         return (self.x <= x < self.x + self.width) and (self.y <= y < self.y + self.height)
@@ -33,7 +34,12 @@ class Toolbar(object):
             self.add_button(button_type)
 
     def mouse(self, button, state, x, y):
-        pass
+        if state == GLUT_UP:
+            # Find which button was clicked and set current tool
+            for btn in self._buttons:
+                if (x, y) in btn:
+                    self.current_tool = btn
+                    break
 
     def draw(self):
         """Draw the toolbar."""
