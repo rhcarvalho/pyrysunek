@@ -15,6 +15,10 @@ class Point(namedtuple('Point', 'x y')):
         return Point.__new__(Point, self.x + other.x, self.y + other.y)
     def __sub__(self, other):
         return Point.__new__(Point, self.x - other.x, self.y - other.y)
+    def __mul__(self, number):
+        return Point.__new__(Point, self.x * number, self.y * number)
+    def __div__(self, number):
+        return Point.__new__(Point, self.x / number, self.y / number)
     def __lt__(self, other):
         return self.hypot < other.hypot
 

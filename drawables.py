@@ -63,8 +63,18 @@ class Ellipse(BaseGraphic):
             glPopMatrix()
         glColor4fv(self.color)
         glPushMatrix()
-        radius = 20
-        glTranslatef(self.top_left.x+radius, self.top_left.y+radius, 0)
-        gluDisk(quadratic, 0, 2*radius, 32, 32)
-        glScale(2.0, 1.2, 1.0)
+        radius = abs(self.top_left.x - self.bottom_right.x) / 2.0
+        tr_x, tr_y = (self.top_left + self.bottom_right) / 2.0
+        glTranslatef(tr_x, tr_y, 0)
+        d_x, d_y = map(abs, (self.top_left - self.bottom_right))
+        # Avoid division by zero
+        d_x = d_x or 1
+        glScale(1.0, 1.0 * d_y / d_x, 1.0)
+        gluDisk(quadratic, 0, radius, d_x / 2, d_y / 2)
         glPopMatrix()
+        
+    def motion(self, x, y):
+        if not self.done:
+            # Note that the sorting done in BaseGraphic__init__
+            # is worth nothing...
+            self.bottom_right = Point(x, y)

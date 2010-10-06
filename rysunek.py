@@ -95,7 +95,7 @@ class App(object):
             self.toolbar.mouse(button, state, x, y)
         else:
             if state == GLUT_DOWN:
-                self.__objects.append(Rectangle((x, y), (x, y)))
+                self.__objects.append(Ellipse((x, y), (x, y)))
                 
             elif state == GLUT_UP and self.__objects:
                 self.__objects[-1].done = True
