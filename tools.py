@@ -49,8 +49,19 @@ class EllipseTool(Tool):
             # update last object
             objs[-1].motion(x, y)
 
-class LineTool(Tool):
-    pass
+class FreeFormTool(Tool):
+    def mouse_down(self, x, y, objs):
+        objs.append(FreeForm((x, y)))
+    
+    def mouse_up(self, x, y, objs):
+        if objs:
+            # Mark last object as finished
+            objs[-1].done = True
+    
+    def mouse_move(self, x, y, objs):
+        if objs:
+            # update last object
+            objs[-1].motion(x, y)
 
 class ResizeTool(Tool):
     pass

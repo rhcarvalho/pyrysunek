@@ -78,3 +78,45 @@ class Ellipse(BaseGraphic):
             # Note that the sorting done in BaseGraphic__init__
             # is worth nothing...
             self.bottom_right = Point(x, y)
+
+
+class FreeForm(object):
+    def __init__(self, start):
+        self.points = [Point._make(start)]
+        #self.color = glGetFloatv(GL_CURRENT_COLOR)
+        self.color = (0.68, 0.68, 0.54, 1.0) # Force color
+        self.done = False
+
+    def __contains__(self, (x, y)):
+        # TODO: implement properly
+        return False
+
+    def __repr__(self):
+        return "<%s points=%s>" % (self.__class__.__name__, self.points)
+        
+    def draw(self):
+        start_point = self.points[0]
+        end_point = self.points[-1]
+        if not self.done:
+            # draw guides in the first and last corners
+            quadratic = gluNewQuadric()
+            r, g, b, a = self.color
+            inverse_color = (1-r, 1-g, 1-b, a)
+            glColor4fv(inverse_color)
+            glPushMatrix()
+            glTranslatef(start_point.x, start_point.y, 0)
+            gluDisk(quadratic, 0, 3, 32, 32)
+            glPopMatrix()
+            glPushMatrix()
+            glTranslatef(end_point.x, end_point.y, 0)
+            gluDisk(quadratic, 0, 3, 32, 32)
+            glPopMatrix()
+        glColor4fv(self.color)
+        glBegin(GL_LINE_STRIP)
+        for point in self.points:
+            glVertex2f(*point)
+        glEnd()
+        
+    def motion(self, x, y):
+        if not self.done:
+            self.points.append(Point(x, y))

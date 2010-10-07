@@ -25,7 +25,7 @@ class EllipseButton(Button, EllipseTool):
     pass
 
 
-class LineButton(Button, LineTool):
+class FreeFormButton(Button, FreeFormTool):
     pass
 
 

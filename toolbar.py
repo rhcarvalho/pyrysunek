@@ -14,7 +14,7 @@ class Toolbar(object):
         
         self._buttons = []
         self.add_buttons(SelectionButton, RectangleButton, EllipseButton,
-            LineButton, ResizeButton, MoveButton, DeleteButton)
+            FreeFormButton, ResizeButton, MoveButton, DeleteButton)
         self.current_tool = self._buttons[1]
 
     def __contains__(self, (x, y)):
