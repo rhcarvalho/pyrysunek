@@ -6,13 +6,13 @@ from drawables import *
 class Tool(object):
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
-        
+
     def mouse_down(self, x, y, objs):
         pass
-    
+
     def mouse_up(self, x, y, objs):
         pass
-    
+
     def mouse_move(self, x, y, objs):
         pass
 
@@ -23,12 +23,12 @@ class SelectionTool(Tool):
 class RectangleTool(Tool):
     def mouse_down(self, x, y, objs):
         objs.append(Rectangle((x, y), (x, y)))
-    
+
     def mouse_up(self, x, y, objs):
         if objs:
             # Mark last object as finished
             objs[-1].done = True
-    
+
     def mouse_move(self, x, y, objs):
         if objs:
             # update last object
@@ -38,12 +38,12 @@ class RectangleTool(Tool):
 class EllipseTool(Tool):
     def mouse_down(self, x, y, objs):
         objs.append(Ellipse((x, y), (x, y)))
-    
+
     def mouse_up(self, x, y, objs):
         if objs:
             # Mark last object as finished
             objs[-1].done = True
-    
+
     def mouse_move(self, x, y, objs):
         if objs:
             # update last object
@@ -52,12 +52,12 @@ class EllipseTool(Tool):
 class FreeFormTool(Tool):
     def mouse_down(self, x, y, objs):
         objs.append(FreeForm((x, y)))
-    
+
     def mouse_up(self, x, y, objs):
         if objs:
             # Mark last object as finished
             objs[-1].done = True
-    
+
     def mouse_move(self, x, y, objs):
         if objs:
             # update last object
@@ -67,11 +67,11 @@ class ResizeTool(Tool):
     def mouse_down(self, x, y, objs):
         # set initial position (x, y)
         pass
-    
+
     def mouse_up(self, x, y, objs):
         # clear initial position
         pass
-    
+
     def mouse_move(self, x, y, objs):
         # scale object by (initx, inity) -> (x, y)
         pass
@@ -80,11 +80,11 @@ class MoveTool(Tool):
     def mouse_down(self, x, y, objs):
         # set initial position (x, y)
         pass
-    
+
     def mouse_up(self, x, y, objs):
         # clear initial position
         pass
-    
+
     def mouse_move(self, x, y, objs):
         # translate object by (initx, inity) -> (x, y)
         pass

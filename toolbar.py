@@ -8,13 +8,14 @@ from buttons import *
 
 
 class Toolbar(object):
-    def __init__(self, x, y, width, height):
-        self.x, self.y = x, y
-        self.width, self.height = width, height
-        
+    def __init__(self, config):
+        self.x, self.y = config.position
+        self.width, self.height = config.size
+
         self._buttons = []
         self.add_buttons(SelectionButton, RectangleButton, EllipseButton,
             FreeFormButton, ResizeButton, MoveButton, DeleteButton)
+
         self.current_tool = self._buttons[1]
 
     def __contains__(self, (x, y)):

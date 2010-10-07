@@ -13,7 +13,7 @@ class Rectangle(BaseGraphic):
         #self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.color = (0.08, 0.08, 0.54, 1.0) # Force color
         self.done = False
-        
+
     def draw(self):
         if not self.done:
             # draw guides in the first and last corners
@@ -31,7 +31,7 @@ class Rectangle(BaseGraphic):
             glPopMatrix()
         glColor4fv(self.color)
         glRectf(*(self.top_left & self.bottom_right))
-        
+
     def motion(self, x, y):
         if not self.done:
             # Note that the sorting done in BaseGraphic__init__
@@ -45,7 +45,7 @@ class Ellipse(BaseGraphic):
         #self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.color = (0.78, 0.78, 0.35, 1.0) # Force color
         self.done = False
-        
+
     def draw(self):
         quadratic = gluNewQuadric()
         if not self.done:
@@ -72,7 +72,7 @@ class Ellipse(BaseGraphic):
         glScale(1.0, 1.0 * d_y / d_x, 1.0)
         gluDisk(quadratic, 0, radius, d_x / 2, d_y / 2)
         glPopMatrix()
-        
+
     def motion(self, x, y):
         if not self.done:
             # Note that the sorting done in BaseGraphic__init__
@@ -93,7 +93,7 @@ class FreeForm(object):
 
     def __repr__(self):
         return "<%s points=%s>" % (self.__class__.__name__, self.points)
-        
+
     def draw(self):
         start_point = self.points[0]
         end_point = self.points[-1]
@@ -116,7 +116,7 @@ class FreeForm(object):
         for point in self.points:
             glVertex2f(*point)
         glEnd()
-        
+
     def motion(self, x, y):
         if not self.done:
             self.points.append(Point(x, y))

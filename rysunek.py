@@ -5,7 +5,6 @@
 
 # TODO:
 # visually identify tools
-# draw lines
 # move objects
 # resize objects
 # change colors
@@ -18,6 +17,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
+from config import default
 from toolbar import Toolbar
 
 
@@ -25,20 +25,20 @@ class App(object):
 
     """A simple OpenGL drawing application."""
 
-    LINE_SIZE_THIN = LINE_SIZE_MEDIUM = \
-    LINE_SIZE_LARGE = LINE_SIZE_XLARGE = True
-
-    def __init__(self, debug=False, width=800, height=500):
+    def __init__(self, config=default, debug=False):
         """Create an instance of a PyRysunek application.
 
-        Keyword arguments:
+        Optional arguments:
+        config -- dictionary containing configuration values (see `config.default`)
         debug -- show debug information in the console during program execution
         """
+        self.config = config
         self.DEBUG = debug
+        
+        self.width, self.height = self.config.window_size
+
         self._objects = []
-        self.toolbar = Toolbar(0, 0, width, 64)
-        self.width = width
-        self.height = height
+        self.toolbar = Toolbar(self.config.toolbar)
 
         self._init_opengl()
 
@@ -47,8 +47,8 @@ class App(object):
         glutInit(sys.argv)
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE)
         glutInitWindowSize(self.width, self.height)
-        glutInitWindowPosition(150, 50)
-        glutCreateWindow("PyRysunek")
+        glutInitWindowPosition(*self.config.window_position)
+        glutCreateWindow(self.config.window_title)
 
         # Assign callback functions
         glutDisplayFunc(self.display)
@@ -57,8 +57,9 @@ class App(object):
         glutMotionFunc(self.motion)
         glutIdleFunc(self.display)
         glutKeyboardFunc(self.keyboard)
+
         # Set background color
-        glClearColor(1.0, 1.0, 1.0, 0.0)
+        glClearColor(*self.config.bg_color)
 
     def display(self):
         """Callback to draw the application in the screen."""
@@ -66,7 +67,7 @@ class App(object):
         glLoadIdentity()
         # Clear frame buffer
         glClear(GL_COLOR_BUFFER_BIT)
-        
+
         for obj in self._objects:
             obj.draw()
 
@@ -80,12 +81,11 @@ class App(object):
         """Callback to adjust the coordinate system whenever a window is
         created, moved or resized.
         """
-        self.width, self.height = w, h
-        glViewport(0, 0, w, h)
+        glViewport(0, 0, self.width, self.height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         # Define left, right, bottom, top coordinates
-        gluOrtho2D(0.0, w, h, 0.0)
+        gluOrtho2D(0.0, self.width, self.height, 0.0)
 
     def mouse(self, button, state, x, y):
         """Callback to handle mouse events."""
@@ -94,19 +94,20 @@ class App(object):
         else:
             if state == GLUT_DOWN:
                 self.toolbar.current_tool.mouse_down(x, y, self._objects)
-                
+
             elif state == GLUT_UP:
                 self.toolbar.current_tool.mouse_up(x, y, self._objects)
-        
+
         if self.DEBUG:
             print button, state, x, y
             print "Current tool:", self.toolbar.current_tool
             print "Objects:", self._objects
-    
+
     def motion(self, x, y):
         self.toolbar.current_tool.mouse_move(x, y, self._objects)
 
     def keyboard(self, key, x, y):
+        # Exit on `ESC` keycode
         if key == "\x1b":
             sys.exit(0)
 
