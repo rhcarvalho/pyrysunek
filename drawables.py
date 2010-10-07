@@ -92,7 +92,13 @@ class FreeForm(object):
         return False
 
     def __repr__(self):
-        return "<%s points=%s>" % (self.__class__.__name__, self.points)
+        if len(self.points) > 6:
+            first_points = map(str, self.points[:3])
+            last_points = map(str, self.points[-3:])
+            repr_points = "[%s, ..., %s]" % tuple(map(", ".join, (first_points, last_points)))
+        else:
+            repr_points = str(self.points)
+        return "<%s points=%s>" % (self.__class__.__name__, repr_points)
 
     def draw(self):
         start_point = self.points[0]
@@ -118,5 +124,6 @@ class FreeForm(object):
         glEnd()
 
     def motion(self, x, y):
+        # Add new points to the FreeForm
         if not self.done:
             self.points.append(Point(x, y))
