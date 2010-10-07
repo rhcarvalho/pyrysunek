@@ -7,13 +7,13 @@ class Tool(object):
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
 
-    def mouse_down(self, x, y, objs):
+    def mouse_down(self, x, y, context):
         pass
 
-    def mouse_up(self, x, y, objs):
+    def mouse_up(self, x, y, context):
         pass
 
-    def mouse_move(self, x, y, objs):
+    def mouse_move(self, x, y, context):
         pass
 
 class SelectionTool(Tool):
@@ -21,75 +21,75 @@ class SelectionTool(Tool):
 
 
 class RectangleTool(Tool):
-    def mouse_down(self, x, y, objs):
-        objs.append(Rectangle((x, y), (x, y)))
+    def mouse_down(self, x, y, context):
+        context.objects.append(Rectangle((x, y), (x, y)))
 
-    def mouse_up(self, x, y, objs):
-        if objs:
+    def mouse_up(self, x, y, context):
+        if context.objects:
             # Mark last object as finished
-            objs[-1].done = True
+            context.objects[-1].done = True
 
-    def mouse_move(self, x, y, objs):
-        if objs:
+    def mouse_move(self, x, y, context):
+        if context.objects:
             # update last object
-            objs[-1].motion(x, y)
+            context.objects[-1].motion(x, y)
 
 
 class EllipseTool(Tool):
-    def mouse_down(self, x, y, objs):
-        objs.append(Ellipse((x, y), (x, y)))
+    def mouse_down(self, x, y, context):
+        context.objects.append(Ellipse((x, y), (x, y)))
 
-    def mouse_up(self, x, y, objs):
-        if objs:
+    def mouse_up(self, x, y, context):
+        if context.objects:
             # Mark last object as finished
-            objs[-1].done = True
+            context.objects[-1].done = True
 
-    def mouse_move(self, x, y, objs):
-        if objs:
+    def mouse_move(self, x, y, context):
+        if context.objects:
             # update last object
-            objs[-1].motion(x, y)
+            context.objects[-1].motion(x, y)
 
 class FreeFormTool(Tool):
-    def mouse_down(self, x, y, objs):
-        objs.append(FreeForm((x, y)))
+    def mouse_down(self, x, y, context):
+        context.objects.append(FreeForm((x, y)))
 
-    def mouse_up(self, x, y, objs):
-        if objs:
+    def mouse_up(self, x, y, context):
+        if context.objects:
             # Mark last object as finished
-            objs[-1].done = True
+            context.objects[-1].done = True
 
-    def mouse_move(self, x, y, objs):
-        if objs:
+    def mouse_move(self, x, y, context):
+        if context.objects:
             # update last object
-            objs[-1].motion(x, y)
+            context.objects[-1].motion(x, y)
 
 class ResizeTool(Tool):
-    def mouse_down(self, x, y, objs):
+    def mouse_down(self, x, y, context):
         # set initial position (x, y)
         pass
 
-    def mouse_up(self, x, y, objs):
+    def mouse_up(self, x, y, context):
         # clear initial position
         pass
 
-    def mouse_move(self, x, y, objs):
+    def mouse_move(self, x, y, context):
         # scale object by (initx, inity) -> (x, y)
         pass
 
 class MoveTool(Tool):
-    def mouse_down(self, x, y, objs):
+    def mouse_down(self, x, y, context):
         # set initial position (x, y)
         pass
 
-    def mouse_up(self, x, y, objs):
+    def mouse_up(self, x, y, context):
         # clear initial position
         pass
 
-    def mouse_move(self, x, y, objs):
+    def mouse_move(self, x, y, context):
         # translate object by (initx, inity) -> (x, y)
         pass
 
 class DeleteTool(Tool):
-    def mouse_up(self, x, y, objs):
+    def mouse_up(self, x, y, context):
         # delete object under current position
         pass

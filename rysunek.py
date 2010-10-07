@@ -37,7 +37,9 @@ class App(object):
         
         self.width, self.height = self.config.window_size
 
-        self._objects = []
+        self.context = Context(
+            objects = [],
+        )
         self.toolbar = Toolbar(self.config.toolbar)
 
         self._init_opengl()
@@ -68,7 +70,7 @@ class App(object):
         # Clear frame buffer
         glClear(GL_COLOR_BUFFER_BIT)
 
-        for obj in self._objects:
+        for obj in self.context.objects:
             obj.draw()
 
         # Make sure that toolbar is on top of everything
@@ -93,25 +95,30 @@ class App(object):
             self.toolbar.mouse(button, state, x, y)
         else:
             if state == GLUT_DOWN:
-                self.toolbar.current_tool.mouse_down(x, y, self._objects)
+                self.toolbar.current_tool.mouse_down(x, y, self.context)
 
             elif state == GLUT_UP:
-                self.toolbar.current_tool.mouse_up(x, y, self._objects)
+                self.toolbar.current_tool.mouse_up(x, y, self.context)
 
         if self.DEBUG:
             print "<Mouse click event>"
             print "  button=%s, state=%s, x=%s, y=%s" % (button, state, x, y)
             print "  current_tool = %s" % self.toolbar.current_tool
-            print "  len(objects) = %s" % len(self._objects)
-            print "  objects[-3:] = %s" % self._objects[-3:]
+            print "  len(objects) = %s" % len(self.context.objects)
+            print "  objects[-3:] = %s" % self.context.objects[-3:]
 
     def motion(self, x, y):
-        self.toolbar.current_tool.mouse_move(x, y, self._objects)
+        self.toolbar.current_tool.mouse_move(x, y, self.context)
 
     def keyboard(self, key, x, y):
         # Exit on `ESC` keycode
         if key == "\x1b":
             sys.exit(0)
+
+
+class Context(dict):
+    def __getattr__(self, attr):
+        return self.get(attr)
 
 
 if __name__ == "__main__":
