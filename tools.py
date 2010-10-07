@@ -64,10 +64,32 @@ class FreeFormTool(Tool):
             objs[-1].motion(x, y)
 
 class ResizeTool(Tool):
-    pass
+    def mouse_down(self, x, y, objs):
+        # set initial position (x, y)
+        pass
+    
+    def mouse_up(self, x, y, objs):
+        # clear initial position
+        pass
+    
+    def mouse_move(self, x, y, objs):
+        # scale object by (initx, inity) -> (x, y)
+        pass
 
 class MoveTool(Tool):
-    pass
+    def mouse_down(self, x, y, objs):
+        # set initial position (x, y)
+        pass
+    
+    def mouse_up(self, x, y, objs):
+        # clear initial position
+        pass
+    
+    def mouse_move(self, x, y, objs):
+        # translate object by (initx, inity) -> (x, y)
+        pass
 
 class DeleteTool(Tool):
-    pass
+    def mouse_up(self, x, y, objs):
+        # delete object under current position
+        pass
