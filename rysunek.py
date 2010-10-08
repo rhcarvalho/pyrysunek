@@ -144,7 +144,7 @@ class ObjectList(list):
         
     def select(self, x, y):
         self.select_none()
-        for obj in self:
+        for obj in reversed(self):
             if (x, y) in obj:
                 obj.selected = True
                 self.selected = obj
