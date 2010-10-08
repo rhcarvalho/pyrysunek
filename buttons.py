@@ -5,15 +5,15 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-from geometry import Point
 from tools import *
 
 
 class Button(object):
     icon_name = None # Must be defined on subclass
 
-    def  __init__(self, offset, size):
-        self.offset = Point._make(offset)
+    def  __init__(self, x, y, size):
+        self.x = x
+        self.y = y
         self.size = size
 
         self.selected = False
@@ -26,11 +26,11 @@ class Button(object):
         self.icon_image = im.tostring("raw", "RGBA", 0, -1)
 
     def __contains__(self, (x, y)):
-        return ((self.offset.x <= x < self.offset.x + self.size) and
-                (self.offset.y <= y < self.offset.y + self.size))
+        return ((self.x <= x < self.x + self.size) and
+                (self.y <= y < self.y + self.size))
 
     def __repr__(self):
-        return "%s(offset=%s, size=%s)" % (self.__class__.__name__, self.offset, self.size)
+        return "%s(x=%s, y=%s, size=%s)" % (self.__class__.__name__, self.x, self.y, self.size)
 
     def draw(self):
         glEnable(GL_TEXTURE_2D)
@@ -46,13 +46,13 @@ class Button(object):
 
         glBegin(GL_QUADS)
         glTexCoord2f(0, 0)
-        glVertex2f(self.offset.x, self.offset.y + self.size)
+        glVertex2f(self.x, self.y + self.size)
         glTexCoord2f(1, 0)
-        glVertex2f(self.offset.x + self.size, self.offset.y + self.size)
+        glVertex2f(self.x + self.size, self.y + self.size)
         glTexCoord2f(1, 1)
-        glVertex2f(self.offset.x + self.size, self.offset.y)
+        glVertex2f(self.x + self.size, self.y)
         glTexCoord2f(0, 1)
-        glVertex2f(self.offset.x, self.offset.y)
+        glVertex2f(self.x, self.y)
         glEnd()
 
 

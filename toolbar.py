@@ -47,7 +47,7 @@ class Toolbar(object):
         padding = self.config.padding
         x = self.x + padding + (size + padding) * len(self._buttons)
         y = self.y + padding
-        self._buttons.append(button_type((x, y), size))
+        self._buttons.append(button_type(x, y, size))
 
     def add_buttons(self, *button_types):
         for button_type in button_types:
