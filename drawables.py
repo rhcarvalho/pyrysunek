@@ -12,17 +12,57 @@ class Drawable(object):
         self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.done = False
         self.selected = False
-        self._translate = Point(0, 0)
+        self.translation_vector = Point(0, 0)
+        self.quadratic = gluNewQuadric()
 
     def __repr__(self):
         return "%s(...)" % (self.__class__.__name__,)
+        
+    @property
+    def highlight_color(self):
+        r, g, b, a = self.color
+        inverse_color = (1 - r, 1 - g, 1 - b, a)
+        return inverse_color
+        
+    def draw(self):
+        glPushMatrix()
+        self.draw_construction_guides()
+        self.draw_element()
+        self.draw_selection_overlay()
+        glPopMatrix()
+        
+    def draw_construction_guides(self):
+        if not self.done:
+            # draw guides in the first and last corners
+            glColor4fv(self.highlight_color)
+            glPushMatrix()
+            glTranslatef(self.top_left.x, self.top_left.y, 0)
+            gluDisk(self.quadratic, 0, 3, 32, 32)
+            glPopMatrix()
+            glPushMatrix()
+            glTranslatef(self.bottom_right.x, self.bottom_right.y, 0)
+            gluDisk(self.quadratic, 0, 3, 32, 32)
+            glPopMatrix()
+        
+    def draw_element(self):
+        pass
+        
+    def draw_selection_overlay(self):
+        if self.selected:
+            glColor4fv(self.highlight_color)
+            glBegin(GL_LINE_LOOP)
+            glVertex2f(self.top_left.x, self.bottom_right.y)
+            glVertex2f(self.bottom_right.x, self.bottom_right.y)
+            glVertex2f(self.bottom_right.x, self.top_left.y)
+            glVertex2f(self.top_left.x, self.top_left.y)
+            glEnd()
     
     def move(self, move_from, move_to):
         # make sure we can treat coordinates as Points
         move_from, move_to = map(Point._make, (move_from, move_to))
         
         # update translation vector
-        self._translate += move_to - move_from
+        self.translation_vector += move_to - move_from
     
 
 class Rectangle(Drawable):
@@ -34,26 +74,10 @@ class Rectangle(Drawable):
     def __contains__(self, (x, y)):
         return (self.top_left.x <= x < self.bottom_right.x) and (self.top_left.y <= y < self.bottom_right.y)
 
-    def draw(self):
-        if not self.done:
-            # draw guides in the first and last corners
-            quadratic = gluNewQuadric()
-            r, g, b, a = self.color
-            inverse_color = (1-r, 1-g, 1-b, a)
-            glColor4fv(inverse_color)
-            glPushMatrix()
-            glTranslatef(self.top_left.x, self.top_left.y, 0)
-            gluDisk(quadratic, 0, 3, 32, 32)
-            glPopMatrix()
-            glPushMatrix()
-            glTranslatef(self.bottom_right.x, self.bottom_right.y, 0)
-            gluDisk(quadratic, 0, 3, 32, 32)
-            glPopMatrix()
+    def draw_element(self):
         glColor4fv(self.color)
-        glPushMatrix()
-        glTranslatef(self._translate.x, self._translate.y, 0)
+        glTranslatef(self.translation_vector.x, self.translation_vector.y, 0)
         glRectf(*(self.top_left & self.bottom_right))
-        glPopMatrix()
 
     def motion(self, x, y):
         if not self.done:
@@ -70,23 +94,8 @@ class Ellipse(Drawable):
         # TODO: implement properly
         return (self.top_left.x <= x < self.bottom_right.x) and (self.top_left.y <= y < self.bottom_right.y)
 
-    def draw(self):
-        quadratic = gluNewQuadric()
-        if not self.done:
-            # draw guides in the first and last corners
-            r, g, b, a = self.color
-            inverse_color = (1-r, 1-g, 1-b, a)
-            glColor4fv(inverse_color)
-            glPushMatrix()
-            glTranslatef(self.top_left.x, self.top_left.y, 0)
-            gluDisk(quadratic, 0, 3, 32, 32)
-            glPopMatrix()
-            glPushMatrix()
-            glTranslatef(self.bottom_right.x, self.bottom_right.y, 0)
-            gluDisk(quadratic, 0, 3, 32, 32)
-            glPopMatrix()
+    def draw_element(self):
         glColor4fv(self.color)
-        glPushMatrix()
         radius = abs(self.top_left.x - self.bottom_right.x) / 2.0
         tr_x, tr_y = (self.top_left + self.bottom_right) / 2.0
         glTranslatef(tr_x, tr_y, 0)
@@ -94,9 +103,15 @@ class Ellipse(Drawable):
         # Avoid division by zero
         d_x = d_x or 1
         glScale(1.0, 1.0 * d_y / d_x, 1.0)
-        glTranslatef(self._translate.x, self._translate.y, 0)
-        gluDisk(quadratic, 0, radius, d_x / 2, d_y / 2)
+        glTranslatef(self.translation_vector.x, self.translation_vector.y, 0)
+        gluDisk(self.quadratic, 0, radius, d_x / 2, d_y / 2)
+
+    def draw_selection_overlay(self):
+        # BUG: selection overlay inconsistent when moving object.
         glPopMatrix()
+        glPushMatrix()
+        glTranslatef(self.translation_vector.x, self.translation_vector.y, 0)
+        super(Ellipse, self).draw_selection_overlay()
 
     def motion(self, x, y):
         if not self.done:
@@ -124,32 +139,39 @@ class FreeForm(Drawable):
         else:
             repr_points = str(self.points)
         return "%s(points=%s)" % (self.__class__.__name__, repr_points)
-
-    def draw(self):
+        
+    @property
+    def top_left(self):
+        return self.points[0]
+        
+    @property
+    def bottom_right(self):
+        return self.points[-1]
+        
+    def draw_construction_guides(self):
         start_point = self.points[0]
         end_point = self.points[-1]
         if not self.done:
             # draw guides in the first and last corners
-            quadratic = gluNewQuadric()
-            r, g, b, a = self.color
-            inverse_color = (1-r, 1-g, 1-b, a)
-            glColor4fv(inverse_color)
+            glColor4fv(self.highlight_color)
             glPushMatrix()
             glTranslatef(start_point.x, start_point.y, 0)
-            gluDisk(quadratic, 0, 3, 32, 32)
+            gluDisk(self.quadratic, 0, 3, 32, 32)
             glPopMatrix()
             glPushMatrix()
             glTranslatef(end_point.x, end_point.y, 0)
-            gluDisk(quadratic, 0, 3, 32, 32)
+            gluDisk(self.quadratic, 0, 3, 32, 32)
             glPopMatrix()
+
+    def draw_element(self):
+        start_point = self.points[0]
+        end_point = self.points[-1]
         glColor4fv(self.color)
-        glPushMatrix()
-        glTranslatef(self._translate.x, self._translate.y, 0)
+        glTranslatef(self.translation_vector.x, self.translation_vector.y, 0)
         glBegin(GL_LINE_STRIP)
         for point in self.points:
             glVertex2f(*point)
         glEnd()
-        glPopMatrix()
 
     def motion(self, x, y):
         # Add new points to the FreeForm

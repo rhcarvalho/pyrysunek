@@ -16,8 +16,10 @@ class Tool(object):
     def mouse_move(self, x, y, context):
         pass
 
+
 class SelectionTool(Tool):
-    pass
+    def mouse_up(self, x, y, context):
+        context.objects.select(x, y)
 
 
 class RectangleTool(Tool):
