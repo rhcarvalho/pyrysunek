@@ -15,7 +15,9 @@ class Button(object):
     def  __init__(self, offset, size):
         self.offset = Point._make(offset)
         self.size = size
-        
+
+        self.selected = False
+
         # Load an image file as a 2D texture using PIL
         icon_path = "icons/%dx%d/%s.png" % (self.size, self.size, self.icon_name)
         im = Image.open(icon_path)
@@ -29,15 +31,19 @@ class Button(object):
 
     def __repr__(self):
         return "%s(offset=%s, size=%s)" % (self.__class__.__name__, self.offset, self.size)
-        
+
     def draw(self):
         glEnable(GL_TEXTURE_2D)
         gluBuild2DMipmaps(
             GL_TEXTURE_2D, 3, self.icon_width, self.icon_height,
             GL_RGBA, GL_UNSIGNED_BYTE, self.icon_image
         )
-        glColor3f(1, 1, 1)
-        
+
+        if self.selected:
+            glColor3f(0.82, 0.82, 0.95)
+        else:
+            glColor3f(1, 1, 1)
+
         glBegin(GL_QUADS)
         glTexCoord2f(0, 0)
         glVertex2f(self.offset.x, self.offset.y + self.size)
