@@ -151,7 +151,12 @@ class ObjectList(list):
                 break
 
 
-if __name__ == "__main__":
-    # Main Program
+def main():
+    """Main Program"""
     app = App(debug=True)
     glutMainLoop()
+
+
+if __name__ == "__main__":
+    import autoreload
+    autoreload.main(main)
