@@ -79,7 +79,7 @@ class ResizeTool(Tool):
 class MoveTool(Tool):
     def mouse_down(self, x, y, context):
         # select object under cursor if there is no selection
-        if not context.selection:
+        if not context.objects.selected:
             context.objects.select(x, y)
         # set initial position (x, y)
         context.move_from = (x, y)
