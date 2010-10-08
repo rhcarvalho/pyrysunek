@@ -57,6 +57,8 @@ class Ellipse(BaseGraphic):
         #self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.color = (0.78, 0.78, 0.35, 1.0) # Force color
         self.done = False
+        self.selected = False
+        self._translate = Point(0, 0)
 
     def draw(self):
         quadratic = gluNewQuadric()
@@ -82,6 +84,7 @@ class Ellipse(BaseGraphic):
         # Avoid division by zero
         d_x = d_x or 1
         glScale(1.0, 1.0 * d_y / d_x, 1.0)
+        glTranslatef(self._translate.x, self._translate.y, 0)
         gluDisk(quadratic, 0, radius, d_x / 2, d_y / 2)
         glPopMatrix()
 
@@ -90,6 +93,13 @@ class Ellipse(BaseGraphic):
             # Note that the sorting done in BaseGraphic__init__
             # is worth nothing...
             self.bottom_right = Point(x, y)
+            
+    def move(self, move_from, move_to):
+        # make sure we can treat coordinates as Points
+        move_from, move_to = map(Point._make, (move_from, move_to))
+        
+        # update translation vector
+        self._translate += move_to - move_from
 
 
 class FreeForm(object):
