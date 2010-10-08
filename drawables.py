@@ -4,17 +4,35 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-from geometry import BaseGraphic, Point
+from geometry import Point
 
 
-class Rectangle(BaseGraphic):
-    def __init__(self, top_left, bottom_right):
-        super(Rectangle, self).__init__(top_left, bottom_right)
-        #self.color = glGetFloatv(GL_CURRENT_COLOR)
-        self.color = (0.08, 0.08, 0.54, 1.0) # Force color
+class Drawable(object):
+    def __init__(self):
+        self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.done = False
         self.selected = False
         self._translate = Point(0, 0)
+
+    def __repr__(self):
+        return "%s(...)" % (self.__class__.__name__,)
+    
+    def move(self, move_from, move_to):
+        # make sure we can treat coordinates as Points
+        move_from, move_to = map(Point._make, (move_from, move_to))
+        
+        # update translation vector
+        self._translate += move_to - move_from
+    
+
+class Rectangle(Drawable):
+    def __init__(self, top_left, bottom_right):
+        super(Rectangle, self).__init__()
+        self.top_left, self.bottom_right = map(Point._make, (top_left, bottom_right))
+        self.color = (0.08, 0.08, 0.54, 1.0) # Force color
+
+    def __contains__(self, (x, y)):
+        return (self.top_left.x <= x < self.bottom_right.x) and (self.top_left.y <= y < self.bottom_right.y)
 
     def draw(self):
         if not self.done:
@@ -39,26 +57,18 @@ class Rectangle(BaseGraphic):
 
     def motion(self, x, y):
         if not self.done:
-            # Note that the sorting done in BaseGraphic__init__
-            # is worth nothing...
             self.bottom_right = Point(x, y)
-            
-    def move(self, move_from, move_to):
-        # make sure we can treat coordinates as Points
-        move_from, move_to = map(Point._make, (move_from, move_to))
-        
-        # update translation vector
-        self._translate += move_to - move_from
 
 
-class Ellipse(BaseGraphic):
+class Ellipse(Drawable):
     def __init__(self, top_left, bottom_right):
-        super(Ellipse, self).__init__(top_left, bottom_right)
-        #self.color = glGetFloatv(GL_CURRENT_COLOR)
+        super(Ellipse, self).__init__()
+        self.top_left, self.bottom_right = map(Point._make, (top_left, bottom_right))
         self.color = (0.78, 0.78, 0.35, 1.0) # Force color
-        self.done = False
-        self.selected = False
-        self._translate = Point(0, 0)
+
+    def __contains__(self, (x, y)):
+        # TODO: implement properly
+        return (self.top_left.x <= x < self.bottom_right.x) and (self.top_left.y <= y < self.bottom_right.y)
 
     def draw(self):
         quadratic = gluNewQuadric()
@@ -90,30 +100,21 @@ class Ellipse(BaseGraphic):
 
     def motion(self, x, y):
         if not self.done:
-            # Note that the sorting done in BaseGraphic__init__
-            # is worth nothing...
             self.bottom_right = Point(x, y)
-            
-    def move(self, move_from, move_to):
-        # make sure we can treat coordinates as Points
-        move_from, move_to = map(Point._make, (move_from, move_to))
-        
-        # update translation vector
-        self._translate += move_to - move_from
 
 
-class FreeForm(object):
+class FreeForm(Drawable):
     def __init__(self, start):
+        super(FreeForm, self).__init__()
         self.points = [Point._make(start)]
-        #self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.color = (0.68, 0.68, 0.54, 1.0) # Force color
-        self.done = False
-        self.selected = False
-        self._translate = Point(0, 0)
 
     def __contains__(self, (x, y)):
         # TODO: implement properly
-        return True
+        start_point = self.points[0]
+        end_point = self.points[-1]
+        p = Point(x, y)
+        return (p - start_point).hypot < 10 or (p - end_point).hypot < 10
 
     def __repr__(self):
         if len(self.points) > 6:
@@ -122,7 +123,7 @@ class FreeForm(object):
             repr_points = "[%s, ..., %s]" % tuple(map(", ".join, (first_points, last_points)))
         else:
             repr_points = str(self.points)
-        return "<%s points=%s>" % (self.__class__.__name__, repr_points)
+        return "%s(points=%s)" % (self.__class__.__name__, repr_points)
 
     def draw(self):
         start_point = self.points[0]
@@ -154,10 +155,3 @@ class FreeForm(object):
         # Add new points to the FreeForm
         if not self.done:
             self.points.append(Point(x, y))
-            
-    def move(self, move_from, move_to):
-        # make sure we can treat coordinates as Points
-        move_from, move_to = map(Point._make, (move_from, move_to))
-        
-        # update translation vector
-        self._translate += move_to - move_from
