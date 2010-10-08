@@ -9,8 +9,9 @@ from buttons import *
 
 class Toolbar(object):
     def __init__(self, config):
+        self.config = config
+        
         self.x, self.y = config.position
-        self.width, self.height = config.size
 
         self._buttons = []
         self.add_buttons(SelectionButton, RectangleButton, EllipseButton,
@@ -22,13 +23,22 @@ class Toolbar(object):
         return (self.x <= x < self.x + self.width) and (self.y <= y < self.y + self.height)
 
     def __repr__(self):
-        return "%s(x=%s y=%s width=%s height=%s)" % (self.__class__.__name__, self.x, self.y, self.width, self.height)
+        return "%s(config=%s)" % (self.__class__.__name__, self.config)
+    
+    @property
+    def width(self):
+        return len(self._buttons) * (self.config.icon_size + self.config.padding) + self.config.padding
+        
+    @property
+    def height(self):
+        return self.config.icon_size + 2 * self.config.padding
 
     def add_button(self, button_type):
-        size = self.height
-        x = self.x + size * len(self._buttons)
-        y = self.y
-        self._buttons.append(button_type((x, y), (x + size, y + size)))
+        size = self.config.icon_size
+        padding = self.config.padding
+        x = self.x + padding + (size + padding) * len(self._buttons)
+        y = self.y + padding
+        self._buttons.append(button_type((x, y), size))
 
     def add_buttons(self, *button_types):
         for button_type in button_types:
@@ -44,12 +54,8 @@ class Toolbar(object):
 
     def draw(self):
         """Draw the toolbar."""
-        colors = (
-            (1.0, 0.0, 0.0),
-            (0.0, 1.0, 0.0),
-            (1.0, 1.0, 0.0),
-            (0.5, 0.7, 0.6),
-        )
+        glColor4fv(self.config.color)
+        glRectf(self.x, self.y, self.width, self.height)
+        
         for i in range(len(self._buttons)):
-            glColor3fv(colors[i % len(colors)])
             self._buttons[i].draw()

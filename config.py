@@ -14,6 +14,8 @@ default = Config(
     window_title = "PyRysunek - v%s" % ".".join(map(str, __version__)),
     toolbar = Config(
         position = (0, 0), # top-left coordinate
-        size = (800, 64),
+        icon_size = 32,
+        padding = 5,
+        color = (0.995, 0.995, 0.99, 1.0),
     ),
 )
