@@ -4,12 +4,17 @@
 # http://launchpad.net/pyrysunek
 
 # TODO:
-# visually identify tools
-# move objects
+# select tool (highlight selected, mouse hit algorithm)
 # resize objects
+# delete objects
 # change colors
 # change line size
-# refine toolbar appearance
+# -- bonus --
+# keyboard shortcuts
+# save / load file
+# group/ungroup objects
+# rotate tool
+# bring to front / send to back
 
 import sys
 
