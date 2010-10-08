@@ -13,6 +13,8 @@ class Rectangle(BaseGraphic):
         #self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.color = (0.08, 0.08, 0.54, 1.0) # Force color
         self.done = False
+        self.selected = False
+        self._translate = Point(0, 0)
 
     def draw(self):
         if not self.done:
@@ -30,13 +32,23 @@ class Rectangle(BaseGraphic):
             gluDisk(quadratic, 0, 3, 32, 32)
             glPopMatrix()
         glColor4fv(self.color)
+        glPushMatrix()
+        glTranslatef(self._translate.x, self._translate.y, 0)
         glRectf(*(self.top_left & self.bottom_right))
+        glPopMatrix()
 
     def motion(self, x, y):
         if not self.done:
             # Note that the sorting done in BaseGraphic__init__
             # is worth nothing...
             self.bottom_right = Point(x, y)
+            
+    def move(self, move_from, move_to):
+        # make sure we can treat coordinates as Points
+        move_from, move_to = map(Point._make, (move_from, move_to))
+        
+        # update translation vector
+        self._translate += move_to - move_from
 
 
 class Ellipse(BaseGraphic):

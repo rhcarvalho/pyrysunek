@@ -38,7 +38,7 @@ class App(object):
         self.width, self.height = self.config.window_size
 
         self.context = Context(
-            objects = [],
+            objects = ObjectList(),
         )
         self.toolbar = Toolbar(self.config.toolbar)
 
@@ -117,8 +117,33 @@ class App(object):
 
 
 class Context(dict):
-    def __getattr__(self, attr):
-        return self.get(attr)
+    def __getattr__(self, name):
+        return self.get(name)
+
+    def __setattr__(self, name, value):
+        return self.__setitem__(name, value)
+
+    def __delattr__(self, name):
+        return self.__delitem__(name)
+
+
+class ObjectList(list):
+    def __init__(self, iterable=()):
+        super(ObjectList, self).__init__(iterable)
+        self.selected = None
+                
+    def select_none(self):
+        for obj in self:
+            obj.selected = False
+        self.selected = None
+        
+    def select(self, x, y):
+        self.select_none()
+        for obj in self:
+            if (x, y) in obj:
+                obj.selected = True
+                self.selected = obj
+                break
 
 
 if __name__ == "__main__":

@@ -78,16 +78,21 @@ class ResizeTool(Tool):
 
 class MoveTool(Tool):
     def mouse_down(self, x, y, context):
+        # select object under cursor if there is no selection
+        if not context.selection:
+            context.objects.select(x, y)
         # set initial position (x, y)
-        pass
+        context.move_from = (x, y)
 
     def mouse_up(self, x, y, context):
         # clear initial position
-        pass
+        del context.move_from
 
     def mouse_move(self, x, y, context):
-        # translate object by (initx, inity) -> (x, y)
-        pass
+        # translate object by (initial x, initial y) -> (x, y)
+        if context.objects.selected and context.move_from:
+            context.objects.selected.move(context.move_from, (x, y))
+            context.move_from = (x, y)
 
 class DeleteTool(Tool):
     def mouse_up(self, x, y, context):
