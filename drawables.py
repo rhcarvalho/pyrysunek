@@ -108,10 +108,12 @@ class FreeForm(object):
         #self.color = glGetFloatv(GL_CURRENT_COLOR)
         self.color = (0.68, 0.68, 0.54, 1.0) # Force color
         self.done = False
+        self.selected = False
+        self._translate = Point(0, 0)
 
     def __contains__(self, (x, y)):
         # TODO: implement properly
-        return False
+        return True
 
     def __repr__(self):
         if len(self.points) > 6:
@@ -140,12 +142,22 @@ class FreeForm(object):
             gluDisk(quadratic, 0, 3, 32, 32)
             glPopMatrix()
         glColor4fv(self.color)
+        glPushMatrix()
+        glTranslatef(self._translate.x, self._translate.y, 0)
         glBegin(GL_LINE_STRIP)
         for point in self.points:
             glVertex2f(*point)
         glEnd()
+        glPopMatrix()
 
     def motion(self, x, y):
         # Add new points to the FreeForm
         if not self.done:
             self.points.append(Point(x, y))
+            
+    def move(self, move_from, move_to):
+        # make sure we can treat coordinates as Points
+        move_from, move_to = map(Point._make, (move_from, move_to))
+        
+        # update translation vector
+        self._translate += move_to - move_from
