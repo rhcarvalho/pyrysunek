@@ -8,38 +8,75 @@ from geometry import Point
 
 
 class Drawable(object):
+    
+    """Represent a drawable OpenGL object.
+    
+    This class is intended to be subclassed.
+    Subclasses must implement these methods:
+        __contains__(self, (x, y))
+        draw_construction_guides(self) 
+        draw_element(self)
+        draw_selection_overlay(self)
+        construct(self, x, y)
+    
+    These methods/properties are provided and may be used as-is by subclasses:
+        @property highlight_color
+        draw(self)
+        draw_small_disk(self, point)
+        draw_rectangle_outline(self, corner, opposite_corner)
+        finish(self)
+        @property finished
+        move(self, move_from, move_to)
+    
+    """
+    
     def __init__(self):
+        """You should not instantiate the class Drawable directly."""
         self.color = glGetFloatv(GL_CURRENT_COLOR)
-        self.done = False
+        self._finished = False
         self.selected = False
         self.translation_vector = Point(0, 0)
         self.quadratic = gluNewQuadric()
 
     def __repr__(self):
-        return "%s(...)" % (self.__class__.__name__,)
+        return "%s()" % (self.__class__.__name__,)
         
     def __contains__(self, (x, y)):
+        """Return whether (x, y) is inside this drawable."""
         raise NotImplementedError
         
     @property
     def highlight_color(self):
+        """Return a 4-value highlight color tuple."""
         r, g, b, a = self.color
         inverse_color = (1 - r, 1 - g, 1 - b, a)
         return inverse_color
         
     def draw_construction_guides(self):
+        """Draw elements specific to drawable interactive creation."""
         raise NotImplementedError
         
     def draw_element(self):
+        """Draw main drawable object."""
         raise NotImplementedError
         
     def draw_selection_overlay(self):
+        """Draw elements specific to drawable selection."""
         raise NotImplementedError
         
     def draw(self):
+        """Draw this drawable as a whole.
+        
+        This method interact with `draw_construction_guides`, `draw_element`
+        and `draw_selection_overlay` to draw itself.
+        It ensures that the OpenGL transformation matrix will be untouched.
+        It set the colors of the construction guides and selection overlay
+        to the `highlight_color`, and the main element to it's `color`.
+        
+        """
         glPushMatrix()
         
-        if not self.done:
+        if not self.finished:
             glColor4fv(self.highlight_color)
             self.draw_construction_guides()
             
@@ -70,92 +107,116 @@ class Drawable(object):
         glVertex2f(opposite_corner.x, corner.y)
         glVertex2f(corner.x, corner.y)
         glEnd()
-    
-    def move(self, move_from, move_to):
-        # make sure we can treat coordinates as Points
-        move_from, move_to = map(Point._make, (move_from, move_to))
         
-        # update translation vector
-        self.translation_vector += move_to - move_from
-        
-    def motion(self, x, y):
+    def construct(self, x, y):
+        """Construct this object given mouse position (x, y)."""
         raise NotImplementedError
+        
+    def finish(self):
+        """Finish construction of this object.
+        
+        Once called, this object won't respond to calls to `construct` anymore.
+        
+        """
+        self._finished = True
+        
+    @property
+    def finished(self):
+        return self._finished
+    
+    def move(self, from_point, to_point):
+        """Move this object relative to two points.
+        
+        This method can be called from external code, so that `from_point` and
+        `to_point` need NOT to be Point instances. (x, y) tuples work as well.
+        
+        """
+        # Make sure we can treat coordinates as Point instances.
+        from_point, to_point = map(Point._make, (from_point, to_point))
+        
+        # Update translation vector.
+        self.translation_vector += to_point - from_point
     
     
 
 class Rectangle(Drawable):
-    def __init__(self, top_left, bottom_right):
+    def __init__(self, corner1, corner2):
         super(Rectangle, self).__init__()
-        self.top_left, self.bottom_right = map(Point._make, (top_left, bottom_right))
+        self.corner1, self.corner2 = map(Point._make, (corner1, corner2))
         self.color = (0.08, 0.08, 0.54, 1.0) # Force color
 
     def __contains__(self, (x, y)):
-        # take into account translation_vector
-        corner1 = self.top_left + self.translation_vector
-        corner2 = self.bottom_right + self.translation_vector
-        # check whether (x, y) is inside the boundaries
-        return sorted((corner1.x, x, corner2.x))[1] == x and sorted((corner1.y, y, corner2.y))[1] == y
+        # Take into account `translation_vector`.
+        corner1 = self.corner1 + self.translation_vector
+        corner2 = self.corner2 + self.translation_vector
+        # Check whether (x, y) is inside the boundaries.
+        x_is_in_boundary = sorted((corner1.x, x, corner2.x))[1] == x
+        y_is_in_boundary = sorted((corner1.y, y, corner2.y))[1] == y
+        return x_is_in_boundary and y_is_in_boundary
         
     def draw_construction_guides(self):
-        # draw guides in the first and last corners
-        self.draw_small_disk(self.top_left)
-        self.draw_small_disk(self.bottom_right)
+        # Draw guides in the first and last corners.
+        self.draw_small_disk(self.corner1)
+        self.draw_small_disk(self.corner2)
 
     def draw_element(self):
-        glRectf(*(self.top_left & self.bottom_right))
+        glRectf(*(self.corner1 & self.corner2))
         
     def draw_selection_overlay(self):
-        self.draw_rectangle_outline(self.top_left, self.bottom_right)
+        self.draw_rectangle_outline(self.corner1, self.corner2)
 
-    def motion(self, x, y):
-        if not self.done:
-            self.bottom_right = Point(x, y)
+    def construct(self, x, y):
+        # Update the second corner position.
+        if not self.finished:
+            self.corner2 = Point(x, y)
 
 
 class Ellipse(Drawable):
-    def __init__(self, top_left, bottom_right):
+    def __init__(self, corner1, corner2):
         super(Ellipse, self).__init__()
-        self.top_left, self.bottom_right = map(Point._make, (top_left, bottom_right))
+        self.corner1, self.corner2 = map(Point._make, (corner1, corner2))
         self.color = (0.78, 0.78, 0.35, 1.0) # Force color
 
     def __contains__(self, (x, y)):
-        # take into account translation_vector
-        top_left = self.top_left + self.translation_vector
-        bottom_right = self.bottom_right + self.translation_vector
+        # Take into account `translation_vector`.
+        corner1 = self.corner1 + self.translation_vector
+        corner2 = self.corner2 + self.translation_vector
         
-        # Compute ellipse paramemters
-        a, b = (top_left - bottom_right) / 2.0
+        # Compute ellipse parameters.
+        a, b = (corner1 - corner2) / 2.0
         
-        # Compute coordinates of the center
-        xc, yc = (top_left + bottom_right) / 2.0
+        # Compute coordinates of the center.
+        xc, yc = (corner1 + corner2) / 2.0
         
-        # Compute ellipse function with 2 decimal digits precision
-        fx = round((((x - xc) ** 2.0) / (a ** 2.0)) + (((y - yc) ** 2.0) / (b ** 2.0)) - 1, 2)
+        # Compute ellipse function with 2 decimal digits precision.
+        fx = round((((x - xc) ** 2.0) / (a ** 2.0)) +
+                   (((y - yc) ** 2.0) / (b ** 2.0)) - 1, 2)
         
         # (x, y) is inside of the ellipse if fx < 0, or in the border if fx == 0
         return fx <= 0.01
         
     def draw_construction_guides(self):
-        # draw guides in the first and last corners
-        self.draw_small_disk(self.top_left)
-        self.draw_small_disk(self.bottom_right)
+        # Draw guides in the first and last corners.
+        self.draw_small_disk(self.corner1)
+        self.draw_small_disk(self.corner2)
 
     def draw_element(self):
-        radius = abs(self.top_left.x - self.bottom_right.x) / 2.0
-        tr_x, tr_y = (self.top_left + self.bottom_right) / 2.0
+        radius = abs(self.corner1.x - self.corner2.x) / 2.0
+        tr_x, tr_y = (self.corner1 + self.corner2) / 2.0
         glTranslatef(tr_x, tr_y, 0)
-        d_x, d_y = map(abs, (self.top_left - self.bottom_right))
-        # Avoid division by zero
+        d_x, d_y = map(abs, (self.corner1 - self.corner2))
+        # Avoid division by zero.
         d_x = d_x or 1
         glScale(1.0, 1.0 * d_y / d_x, 1.0)
         gluDisk(self.quadratic, 0, radius, d_x / 2, d_y / 2)
 
     def draw_selection_overlay(self):
-        self.draw_rectangle_outline(self.top_left, self.bottom_right)
+        self.draw_rectangle_outline(self.corner1, self.corner2)
 
-    def motion(self, x, y):
-        if not self.done:
-            self.bottom_right = Point(x, y)
+    def construct(self, x, y):
+        # Update the second corner position.
+        if not self.finished:
+            self.corner2 = Point(x, y)
 
 
 class FreeForm(Drawable):
@@ -207,7 +268,7 @@ class FreeForm(Drawable):
         return "%s(points=%s)" % (self.__class__.__name__, repr_points)
         
     def draw_construction_guides(self):
-        # draw guides in the first and last points
+        # Draw guides in the first and last points.
         self.draw_small_disk(self.points[0])
         self.draw_small_disk(self.points[-1])
 
@@ -224,7 +285,7 @@ class FreeForm(Drawable):
                              max(p.y for p in self.points))
         self.draw_rectangle_outline(top_left, bottom_right)
 
-    def motion(self, x, y):
-        # Add new points to the FreeForm
-        if not self.done:
+    def construct(self, x, y):
+        # Add new points to the FreeForm.
+        if not self.finished:
             self.points.append(Point(x, y))

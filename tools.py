@@ -29,12 +29,12 @@ class RectangleTool(Tool):
     def mouse_up(self, x, y, context):
         if context.objects:
             # Mark last object as finished
-            context.objects[-1].done = True
+            context.objects[-1].finish()
 
     def mouse_move(self, x, y, context):
         if context.objects:
             # update last object
-            context.objects[-1].motion(x, y)
+            context.objects[-1].construct(x, y)
 
 
 class EllipseTool(Tool):
@@ -44,12 +44,12 @@ class EllipseTool(Tool):
     def mouse_up(self, x, y, context):
         if context.objects:
             # Mark last object as finished
-            context.objects[-1].done = True
+            context.objects[-1].finish()
 
     def mouse_move(self, x, y, context):
         if context.objects:
             # update last object
-            context.objects[-1].motion(x, y)
+            context.objects[-1].construct(x, y)
 
 class FreeFormTool(Tool):
     def mouse_down(self, x, y, context):
@@ -58,12 +58,12 @@ class FreeFormTool(Tool):
     def mouse_up(self, x, y, context):
         if context.objects:
             # Mark last object as finished
-            context.objects[-1].done = True
+            context.objects[-1].finish()
 
     def mouse_move(self, x, y, context):
         if context.objects:
             # update last object
-            context.objects[-1].motion(x, y)
+            context.objects[-1].construct(x, y)
 
 class ResizeTool(Tool):
     def mouse_down(self, x, y, context):
