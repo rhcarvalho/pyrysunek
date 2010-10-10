@@ -233,6 +233,10 @@ class FreeForm(Drawable):
         q = Point(x, y)
         # Iterate over all pairs of sequential points.
         for p1, p2 in zip(self.points, self.points[1:]):
+            # Take into account `translation_vector`.
+            p1 = p1 + self.translation_vector
+            p2 = p2 + self.translation_vector
+        
             if p1 == p2:
                 # If the points are coincident, then compute distance point-to-point.
                 distance = (q - p1).hypot
