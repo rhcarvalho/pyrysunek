@@ -4,7 +4,6 @@
 # http://launchpad.net/pyrysunek
 
 # TODO:
-# select tool (highlight selected, mouse hit algorithm)
 # resize objects
 # delete objects
 # change colors
