@@ -54,6 +54,7 @@ class Button(object):
         glTexCoord2f(0, 1)
         glVertex2f(self.x, self.y)
         glEnd()
+        glDisable(GL_TEXTURE_2D)
 
 
 class SelectionButton(Button, SelectionTool):
