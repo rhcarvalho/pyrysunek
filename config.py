@@ -17,6 +17,7 @@ default = Config(
         icon_size = 32,
         padding = 5,
         color = (0.90625, 0.90625, 0.890625, 1.0),
+        selection_color = (0.82, 0.82, 0.95, 1.0),
         color_picker = Config(
             default_fill_color = (0.0, 0.0, 0.0, 1.0),
             default_line_color = (1.0, 1.0, 0.0, 1.0),

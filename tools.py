@@ -24,7 +24,8 @@ class SelectionTool(Tool):
 
 class RectangleTool(Tool):
     def mouse_down(self, x, y, context):
-        context.objects.append(Rectangle((x, y), (x, y)))
+        color = context.color_picker.current_fill_color
+        context.objects.append(Rectangle(color, (x, y), (x, y)))
 
     def mouse_up(self, x, y, context):
         if context.objects:
@@ -39,7 +40,8 @@ class RectangleTool(Tool):
 
 class EllipseTool(Tool):
     def mouse_down(self, x, y, context):
-        context.objects.append(Ellipse((x, y), (x, y)))
+        color = context.color_picker.current_fill_color
+        context.objects.append(Ellipse(color, (x, y), (x, y)))
 
     def mouse_up(self, x, y, context):
         if context.objects:
@@ -50,10 +52,12 @@ class EllipseTool(Tool):
         if context.objects:
             # update last object
             context.objects[-1].construct(x, y)
+
 
 class FreeFormTool(Tool):
     def mouse_down(self, x, y, context):
-        context.objects.append(FreeForm((x, y)))
+        color = context.color_picker.current_fill_color
+        context.objects.append(FreeForm(color, (x, y)))
 
     def mouse_up(self, x, y, context):
         if context.objects:
@@ -64,6 +68,7 @@ class FreeFormTool(Tool):
         if context.objects:
             # update last object
             context.objects[-1].construct(x, y)
+
 
 class ResizeTool(Tool):
     def mouse_down(self, x, y, context):
@@ -83,6 +88,7 @@ class ResizeTool(Tool):
             context.objects.selected.resize(context.resize_from, (x, y))
             context.resize_from = (x, y)
 
+
 class MoveTool(Tool):
     def mouse_down(self, x, y, context):
         # select object under cursor if there is no selection
@@ -100,6 +106,7 @@ class MoveTool(Tool):
         if context.objects.selected and context.move_from:
             context.objects.selected.move(context.move_from, (x, y))
             context.move_from = (x, y)
+
 
 class DeleteTool(Tool):
     def mouse_up(self, x, y, context):

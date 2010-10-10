@@ -5,7 +5,7 @@
 
 # TODO:
 # resize objects
-# change colors
+# drawables with fill and outline
 # change line size
 # -- bonus --
 # SelectionTool behavior according to the Red Book
@@ -14,6 +14,8 @@
 # group/ungroup objects
 # rotate tool
 # bring to front / send to back
+
+# ** turn off DEBUG and AUTORELOAD **
 
 import sys
 
@@ -41,10 +43,11 @@ class App(object):
 
         self.width, self.height = self.config.window_size
 
+        self.toolbar = Toolbar(self.config.toolbar)
         self.context = Context(
             objects = ObjectList(),
+            color_picker = self.toolbar.color_picker,
         )
-        self.toolbar = Toolbar(self.config.toolbar)
 
         self._init_opengl()
 

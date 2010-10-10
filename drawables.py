@@ -32,9 +32,9 @@ class Drawable(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, color):
         """You should not instantiate the class Drawable directly."""
-        self.color = glGetFloatv(GL_CURRENT_COLOR)
+        self.color = color
         self._finished = False
         self.selected = False
         self.translation_vector = Point(0, 0)
@@ -166,10 +166,9 @@ class Drawable(object):
 
 
 class Rectangle(Drawable):
-    def __init__(self, corner1, corner2):
-        super(Rectangle, self).__init__()
+    def __init__(self, color, corner1, corner2):
+        super(Rectangle, self).__init__(color)
         self.corner1, self.corner2 = map(Point._make, (corner1, corner2))
-        self.color = (0.08, 0.08, 0.54, 1.0) # Force color
 
     def __contains__(self, (x, y)):
         # Take into account `translation_vector`.
@@ -202,10 +201,9 @@ class Rectangle(Drawable):
 
 
 class Ellipse(Drawable):
-    def __init__(self, corner1, corner2):
-        super(Ellipse, self).__init__()
+    def __init__(self, color, corner1, corner2):
+        super(Ellipse, self).__init__(color)
         self.corner1, self.corner2 = map(Point._make, (corner1, corner2))
-        self.color = (0.78, 0.78, 0.35, 1.0) # Force color
 
     def __contains__(self, (x, y)):
         # Take into account `translation_vector`.
@@ -254,10 +252,9 @@ class Ellipse(Drawable):
 
 
 class FreeForm(Drawable):
-    def __init__(self, start):
-        super(FreeForm, self).__init__()
+    def __init__(self, color, start):
+        super(FreeForm, self).__init__(color)
         self.points = [Point._make(start)]
-        self.color = (0.68, 0.68, 0.54, 1.0) # Force color
 
     def __contains__(self, (x, y)):
         """Test whether (x, y) is close enough to this free form.

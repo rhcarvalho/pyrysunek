@@ -9,21 +9,12 @@ from tools import *
 
 
 class Button(object):
-    icon_name = None # Must be defined on subclass
-
-    def  __init__(self, x, y, size):
+    def  __init__(self, x, y, size, color):
         self.x = x
         self.y = y
         self.size = size
-
+        self.color = color
         self.selected = False
-
-        # Load an image file as a 2D texture using PIL
-        icon_path = "icons/%dx%d/%s.png" % (self.size, self.size, self.icon_name)
-        im = Image.open(icon_path)
-        self.icon_width = im.size[0]
-        self.icon_height = im.size[1]
-        self.icon_image = im.tostring("raw", "RGBA", 0, -1)
 
     def __contains__(self, (x, y)):
         return ((self.x <= x < self.x + self.size) and
@@ -33,6 +24,24 @@ class Button(object):
         return "%s(x=%s, y=%s, size=%s)" % (self.__class__.__name__, self.x, self.y, self.size)
 
     def draw(self):
+        glColor4fv(self.color)
+        glRectf(self.x, self.y, self.x + self.size, self.y + self.size)
+
+
+class IconicButton(Button):
+    icon_name = None # Must be defined on subclass
+
+    def  __init__(self, x, y, size, color):
+        super(IconicButton, self).__init__(x, y, size, color)
+
+        # Load an image file as a 2D texture using PIL
+        icon_path = "icons/%dx%d/%s.png" % (self.size, self.size, self.icon_name)
+        im = Image.open(icon_path)
+        self.icon_width = im.size[0]
+        self.icon_height = im.size[1]
+        self.icon_image = im.tostring("raw", "RGBA", 0, -1)
+
+    def draw(self):
         glEnable(GL_TEXTURE_2D)
         gluBuild2DMipmaps(
             GL_TEXTURE_2D, 3, self.icon_width, self.icon_height,
@@ -40,10 +49,10 @@ class Button(object):
         )
 
         if self.selected:
-            glColor3f(0.82, 0.82, 0.95)
+            color = self.color
         else:
-            glColor3f(1, 1, 1)
-
+            color = (1.0, 1.0, 1.0, 1.0)
+        glColor4fv(color)
         glBegin(GL_QUADS)
         glTexCoord2f(0, 0)
         glVertex2f(self.x, self.y + self.size)
@@ -57,29 +66,33 @@ class Button(object):
         glDisable(GL_TEXTURE_2D)
 
 
-class SelectionButton(Button, SelectionTool):
+class SelectionButton(IconicButton, SelectionTool):
     icon_name = "tool-pointer"
 
 
-class RectangleButton(Button, RectangleTool):
+class RectangleButton(IconicButton, RectangleTool):
     icon_name = "draw-rectangle"
 
 
-class EllipseButton(Button, EllipseTool):
+class EllipseButton(IconicButton, EllipseTool):
     icon_name = "draw-ellipse"
 
 
-class FreeFormButton(Button, FreeFormTool):
+class FreeFormButton(IconicButton, FreeFormTool):
     icon_name = "draw-freehand"
 
 
-class ResizeButton(Button, ResizeTool):
+class ResizeButton(IconicButton, ResizeTool):
     icon_name = "transform-scale-horizontal"
 
 
-class MoveButton(Button, MoveTool):
+class MoveButton(IconicButton, MoveTool):
     icon_name = "transform-move-horizontal"
 
 
-class DeleteButton(Button, DeleteTool):
+class DeleteButton(IconicButton, DeleteTool):
     icon_name = "draw-eraser-delete-objects"
+
+
+class SetColorButton(Button):
+    pass
