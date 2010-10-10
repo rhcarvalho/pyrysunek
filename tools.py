@@ -104,4 +104,6 @@ class MoveTool(Tool):
 class DeleteTool(Tool):
     def mouse_up(self, x, y, context):
         # delete object under current position
-        pass
+        context.objects.select(x, y)
+        if context.objects.selected:
+            context.objects.remove(context.objects.selected)
