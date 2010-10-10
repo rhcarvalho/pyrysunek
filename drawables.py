@@ -182,10 +182,7 @@ class Rectangle(Drawable):
 
     @property
     def centroid(self):
-        # Take into account `translation_vector`.
-        corner1 = self.corner1 + self.translation_vector
-        corner2 = self.corner2 + self.translation_vector
-        return (corner1 + corner2) / 2.0
+        return (self.corner1 + self.corner2) / 2.0
 
     def draw_construction_guides(self):
         # Draw guides in the first and last corners.
@@ -230,10 +227,7 @@ class Ellipse(Drawable):
 
     @property
     def centroid(self):
-        # Take into account `translation_vector`.
-        corner1 = self.corner1 + self.translation_vector
-        corner2 = self.corner2 + self.translation_vector
-        return (corner1 + corner2) / 2.0
+        return (self.corner1 + self.corner2) / 2.0
 
     def draw_construction_guides(self):
         # Draw guides in the first and last corners.
@@ -304,10 +298,7 @@ class FreeForm(Drawable):
 
     @property
     def centroid(self):
-        centroid = sum(self.points, Point(0, 0)) / float(len(self.points))
-        # Take into account `translation_vector`.
-        centroid = centroid + self.translation_vector
-        return centroid
+        return sum(self.points, Point(0, 0)) / float(len(self.points))
 
     def __repr__(self):
         if len(self.points) > 6:
