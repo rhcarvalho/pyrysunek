@@ -21,6 +21,11 @@ def reloader_thread():
                 mtimes[filename] = mtime
                 continue
             if mtime > mtimes[filename]:
+                print "-" * 60
+                print "File change detected:"
+                print "<%s>" % filename
+                print "Reloading..."
+                print "-" * 60
                 sys.exit(3) # force reload
         time.sleep(1)
 
@@ -34,7 +39,7 @@ def restart_with_reloader():
                                args, new_environ)
         if exit_code != 3:
             return exit_code
-        
+
 def main(main_func):
     if os.environ.get("RUN_MAIN") == "true":
         thread.start_new_thread(main_func, ())
@@ -44,7 +49,7 @@ def main(main_func):
             pass
     else:
         try:
-            while 1:
+            while True:
                 exit_code = restart_with_reloader()
                 if exit_code == 0:
                     sys.exit(exit_code)
