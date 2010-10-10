@@ -71,7 +71,7 @@ class Toolbar(object):
     def draw(self):
         """Draw the toolbar."""
         glColor4fv(self.config.color)
-        glRectf(self.x, self.y, self.width, self.height)
+        glRectf(self.x, self.y, self.x + self.width, self.y + self.height)
 
         for i in range(len(self._buttons)):
             self._buttons[i].draw()
