@@ -9,6 +9,7 @@
 # change colors
 # change line size
 # -- bonus --
+# SelectionTool behavior according to the Red Book
 # keyboard shortcuts
 # save / load file
 # group/ungroup objects
@@ -38,7 +39,7 @@ class App(object):
         """
         self.config = config
         self.DEBUG = debug
-        
+
         self.width, self.height = self.config.window_size
 
         self.context = Context(
@@ -135,12 +136,12 @@ class ObjectList(list):
     def __init__(self, iterable=()):
         super(ObjectList, self).__init__(iterable)
         self.selected = None
-                
+
     def select_none(self):
         for obj in self:
             obj.selected = False
         self.selected = None
-        
+
     def select(self, x, y):
         self.select_none()
         for obj in reversed(self):

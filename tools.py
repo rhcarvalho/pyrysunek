@@ -67,16 +67,21 @@ class FreeFormTool(Tool):
 
 class ResizeTool(Tool):
     def mouse_down(self, x, y, context):
+        # select object under cursor if there is no selection
+        if not context.objects.selected:
+            context.objects.select(x, y)
         # set initial position (x, y)
-        pass
+        context.resize_from = (x, y)
 
     def mouse_up(self, x, y, context):
         # clear initial position
-        pass
+        del context.resize_from
 
     def mouse_move(self, x, y, context):
-        # scale object by (initx, inity) -> (x, y)
-        pass
+        # scale object by (initial x, initial y) -> (x, y)
+        if context.objects.selected and context.resize_from:
+            context.objects.selected.resize(context.resize_from, (x, y))
+            context.resize_from = (x, y)
 
 class MoveTool(Tool):
     def mouse_down(self, x, y, context):
