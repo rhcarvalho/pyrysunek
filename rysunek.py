@@ -87,11 +87,12 @@ class App(object):
         """Callback to adjust the coordinate system whenever a window is
         created, moved or resized.
         """
-        glViewport(0, 0, self.width, self.height)
+        self.width, self.height = w, h
+        glViewport(0, 0, w, h)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         # Define left, right, bottom, top coordinates
-        gluOrtho2D(0.0, self.width, self.height, 0.0)
+        gluOrtho2D(0.0, w, h, 0.0)
 
     def mouse(self, button, state, x, y):
         """Callback to handle mouse events."""
