@@ -29,7 +29,7 @@ def restart_with_reloader():
         args = [sys.executable] + sys.argv
         if sys.platform == "win32": args = ['"%s"' % arg for arg in args]
         new_environ = os.environ.copy()
-        new_environ["RUN_MAIN"] = 'true'
+        new_environ["RUN_MAIN"] = "true"
         exit_code = os.spawnve(os.P_WAIT, sys.executable,
                                args, new_environ)
         if exit_code != 3:
@@ -37,16 +37,23 @@ def restart_with_reloader():
         
 def main(main_func):
     if os.environ.get("RUN_MAIN") == "true":
-        
         thread.start_new_thread(main_func, ())
-
         try:
             reloader_thread()
         except KeyboardInterrupt:
             pass
     else:
         try:
-            sys.exit(restart_with_reloader())
+            while 1:
+                exit_code = restart_with_reloader()
+                if exit_code == 0:
+                    sys.exit(exit_code)
+                else:
+                    print "-" * 60
+                    print "Your program failed with exit code <%s>." % exit_code
+                    print "I will attempt to reload it..."
+                    print "Hit <Ctrl-C> to exit."
+                    print "-" * 60
         except KeyboardInterrupt:
             print "<Ctrl-C> hit: bye!"
-
+            sys.exit(1)
