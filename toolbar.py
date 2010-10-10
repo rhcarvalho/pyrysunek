@@ -18,6 +18,15 @@ class Toolbar(object):
             FreeFormButton, ResizeButton, MoveButton, DeleteButton)
 
         self.current_tool = self._buttons[1]
+        
+        config.color_picker.update(
+            position = (self.width, self.y),
+            icon_size = config.icon_size / 2,
+            padding = config.padding,
+            toolbar_color = config.color,
+            toolbar_height = self.height,
+        )
+        self.color_picker = ColorPicker(config.color_picker)
 
     def _get_current_tool(self):
         return self.__current_tool
@@ -29,7 +38,9 @@ class Toolbar(object):
     current_tool = property(_get_current_tool, _set_current_tool)
 
     def __contains__(self, (x, y)):
-        return (self.x <= x < self.x + self.width) and (self.y <= y < self.y + self.height)
+        x_is_in_boundary = self.x <= x < self.color_picker.x + self.color_picker.width
+        y_is_in_boundary = self.y <= y < self.y + self.height
+        return x_is_in_boundary and y_is_in_boundary
 
     def __repr__(self):
         return "%s(config=%s)" % (self.__class__.__name__, self.config)
@@ -64,6 +75,8 @@ class Toolbar(object):
 
         for i in range(len(self._buttons)):
             self._buttons[i].draw()
+            
+        self.color_picker.draw()
 
     def select(self, x, y):
         """Find which button was clicked and set current tool"""
@@ -71,3 +84,44 @@ class Toolbar(object):
             if (x, y) in button:
                 self.current_tool = button
                 break
+
+
+class ColorPicker(object):
+    def __init__(self, config):
+        self.config = config
+
+        self.x, self.y = config.position
+        self.x += 3 * self.config.padding
+        self.height = self.config.toolbar_height
+
+    @property
+    def width(self):
+        size = self.config.icon_size
+        padding = self.config.padding
+        return (len(self.config.colors) / 2) * (size + padding) + 3 * (padding + size)
+        
+    def draw(self):
+        """Draw the color picker."""
+        glColor4fv(self.config.toolbar_color)
+        glRectf(self.x, self.y, self.x + self.width, self.y + self.height)
+        
+        size = self.config.icon_size
+        padding = self.config.padding
+        
+        x = self.x + padding
+        y = self.y + padding
+        glColor4fv(self.config.default_fill_color)
+        glRectf(x, y, x + size, y + size)
+        x = self.x + padding + (size + padding)
+        y = self.y + padding + (size + padding / 2.0)
+        glColor4fv(self.config.default_line_color)
+        glRectf(x, y, x + size, y + size)
+        
+        colors = (self.config.colors[:len(self.config.colors)/2],
+                  self.config.colors[len(self.config.colors)/2:])
+        for i, row in enumerate(colors):
+            for j, color in enumerate(row):
+                glColor4fv(color)
+                x = self.x + (3 * padding + 3 * size) + (size + padding) * j
+                y = self.y + padding + (size + padding / 2.0) * i
+                glRectf(x, y, x + self.config.icon_size, y + self.config.icon_size)

@@ -5,7 +5,6 @@
 
 # TODO:
 # resize objects
-# delete objects
 # change colors
 # change line size
 # -- bonus --
