@@ -13,6 +13,7 @@ class Drawable(object):
 
     This class is intended to be subclassed.
     Subclasses must implement these methods/properties:
+        normalize(self)
         @property centroid
         __contains__(self, (x, y))
         draw_construction_guides(self)
@@ -53,6 +54,15 @@ class Drawable(object):
         """Return current centroid of this object."""
         raise NotImplementedError
 
+    def normalize(self):
+        """"Normalize control points of this object.
+
+        All of the control points will be translated so that the object's
+        centroid lies in the center of the coordinate system (0, 0).
+
+        """
+        raise NotImplementedError
+
     @property
     def highlight_color(self):
         """Return a 4-value highlight color tuple."""
@@ -79,7 +89,7 @@ class Drawable(object):
         and `draw_selection_overlay` to draw itself.
         It ensures that the OpenGL transformation matrix will be untouched.
         It set the colors of the construction guides and selection overlay
-        to the `highlight_color`, and the main element to it's `color`.
+        to the `highlight_color`, and the main element to its `color`.
 
         """
         glPushMatrix()
@@ -88,13 +98,13 @@ class Drawable(object):
             glColor4fv(self.highlight_color)
             self.draw_construction_guides()
 
-        glColor4fv(self.color)
-        glTranslatef(self.translation_vector.x, self.translation_vector.y, 0)
+        glTranslatef(self.translation_vector.x, self.translation_vector.y, 0.0)
+        glScale(self.resize_vector.x, self.resize_vector.y, 1.0)
+
         glPushMatrix()
+        glColor4fv(self.color)
         self.draw_element()
         glPopMatrix()
-        glColor4fv((0.6, 0.0, 0.0, 0.0))
-        self.draw_small_disk(self.centroid)
 
         if self.selected:
             glColor4fv(self.highlight_color)
@@ -126,9 +136,11 @@ class Drawable(object):
         """Finish construction of this object.
 
         Once called, this object won't respond to calls to `construct` anymore.
+        Also, all of its control points will be normalized.
 
         """
         self._finished = True
+        self.normalize()
 
     @property
     def finished(self):
@@ -157,12 +169,18 @@ class Drawable(object):
         # Make sure we can treat coordinates as Point instances.
         from_point, to_point = map(Point._make, (from_point, to_point))
 
-        initial_distance = (from_point - self.centroid).hypot
-        final_distance = (to_point - self.centroid).hypot
-        if initial_distance != 0:
-            # Update resize vector.
-            self.resize_vector *= final_distance / initial_distance
+        scale_x, scale_y = self.resize_vector
+        from_vector = from_point - self.translation_vector
+        to_vector = to_point - self.translation_vector
 
+        # Avoid division by zero.
+        from_vector += Point(0.001, 0.001)
+
+        # Update scale.
+        scale_x *= to_vector.x / from_vector.x
+        scale_y *= to_vector.y / from_vector.y
+
+        self.resize_vector = Point(scale_x, scale_y)
 
 
 class Rectangle(Drawable):
@@ -182,6 +200,12 @@ class Rectangle(Drawable):
     @property
     def centroid(self):
         return (self.corner1 + self.corner2) / 2.0
+
+    def normalize(self):
+        centroid = self.centroid
+        self.translation_vector += centroid
+        self.corner1 -= centroid
+        self.corner2 -= centroid
 
     def draw_construction_guides(self):
         # Draw guides in the first and last corners.
@@ -227,20 +251,33 @@ class Ellipse(Drawable):
     def centroid(self):
         return (self.corner1 + self.corner2) / 2.0
 
+    def normalize(self):
+        centroid = self.centroid
+        self.translation_vector += centroid
+        self.corner1 -= centroid
+        self.corner2 -= centroid
+
     def draw_construction_guides(self):
         # Draw guides in the first and last corners.
         self.draw_small_disk(self.corner1)
         self.draw_small_disk(self.corner2)
 
     def draw_element(self):
+        # Compute radius from the x coordinate.
         radius = abs(self.corner1.x - self.corner2.x) / 2.0
-        tr_x, tr_y = (self.corner1 + self.corner2) / 2.0
-        glTranslatef(tr_x, tr_y, 0)
-        d_x, d_y = map(abs, (self.corner1 - self.corner2))
+
+        # Center the ellipse on its centroid.
+        tr_x, tr_y = self.centroid
+        glTranslatef(tr_x, tr_y, 0.0)
+
+        # Scale to transform disk into ellipse.
+        d_x, d_y = map(lambda x: float(abs(x)), (self.corner1 - self.corner2))
         # Avoid division by zero.
-        d_x = d_x or 1
-        glScale(1.0, 1.0 * d_y / d_x, 1.0)
-        gluDisk(self.quadratic, 0, radius, d_x / 2, d_y / 2)
+        d_x = d_x or 1.0
+        glScale(1.0, d_y / d_x, 1.0)
+
+        # Draw filled disk/ellipse.
+        gluDisk(self.quadratic, 0.0, radius, int(d_x / 2.0), int(d_y / 2.0))
 
     def draw_selection_overlay(self):
         self.draw_rectangle_outline(self.corner1, self.corner2)
@@ -296,6 +333,12 @@ class FreeForm(Drawable):
     @property
     def centroid(self):
         return sum(self.points, Point(0, 0)) / float(len(self.points))
+
+    def normalize(self):
+        centroid = self.centroid
+        self.translation_vector += centroid
+        for i in xrange(len(self.points)):
+            self.points[i] -= centroid
 
     def __repr__(self):
         if len(self.points) > 6:
