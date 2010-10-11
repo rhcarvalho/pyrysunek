@@ -114,3 +114,4 @@ class DeleteTool(Tool):
         context.objects.select(x, y)
         if context.objects.selected:
             context.objects.remove(context.objects.selected)
+            context.objects.selected = None
