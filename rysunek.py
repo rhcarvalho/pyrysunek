@@ -4,8 +4,7 @@
 # http://launchpad.net/pyrysunek
 
 # TODO:
-# resize objects
-# drawables with fill and outline
+# better selection overlay
 # change line size
 # -- bonus --
 # SelectionTool behavior according to the Red Book

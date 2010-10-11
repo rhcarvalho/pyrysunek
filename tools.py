@@ -24,8 +24,9 @@ class SelectionTool(Tool):
 
 class RectangleTool(Tool):
     def mouse_down(self, x, y, context):
-        color = context.color_picker.current_fill_color
-        context.objects.append(Rectangle(color, (x, y), (x, y)))
+        fill_color = context.color_picker.current_fill_color
+        line_color = context.color_picker.current_line_color
+        context.objects.append(Rectangle(fill_color, line_color, (x, y), (x, y)))
 
     def mouse_up(self, x, y, context):
         if context.objects:
@@ -40,8 +41,9 @@ class RectangleTool(Tool):
 
 class EllipseTool(Tool):
     def mouse_down(self, x, y, context):
-        color = context.color_picker.current_fill_color
-        context.objects.append(Ellipse(color, (x, y), (x, y)))
+        fill_color = context.color_picker.current_fill_color
+        line_color = context.color_picker.current_line_color
+        context.objects.append(Ellipse(fill_color, line_color, (x, y), (x, y)))
 
     def mouse_up(self, x, y, context):
         if context.objects:
@@ -56,8 +58,9 @@ class EllipseTool(Tool):
 
 class FreeFormTool(Tool):
     def mouse_down(self, x, y, context):
-        color = context.color_picker.current_fill_color
-        context.objects.append(FreeForm(color, (x, y)))
+        fill_color = context.color_picker.current_fill_color
+        line_color = context.color_picker.current_line_color
+        context.objects.append(FreeForm(fill_color, line_color, (x, y)))
 
     def mouse_up(self, x, y, context):
         if context.objects:

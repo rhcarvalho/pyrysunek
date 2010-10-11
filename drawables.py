@@ -17,7 +17,8 @@ class Drawable(object):
         @property centroid
         __contains__(self, (x, y))
         draw_construction_guides(self)
-        draw_element(self)
+        draw_fill(self)
+        draw_outline(self)
         draw_selection_overlay(self)
         construct(self, x, y)
 
@@ -33,9 +34,10 @@ class Drawable(object):
 
     """
 
-    def __init__(self, color):
+    def __init__(self, fill_color, line_color):
         """You should not instantiate the class Drawable directly."""
-        self.color = color
+        self.fill_color = fill_color
+        self.line_color = line_color
         self._finished = False
         self.selected = False
         self.translation_vector = Point(0, 0)
@@ -66,16 +68,24 @@ class Drawable(object):
     @property
     def highlight_color(self):
         """Return a 4-value highlight color tuple."""
-        r, g, b, a = self.color
-        inverse_color = (1 - r, 1 - g, 1 - b, a)
-        return inverse_color
+        # Average fill color and line color.
+        combined_color = map(lambda (x, y): (x + y) / 2.0,
+                             zip(self.fill_color, self.line_color))
+        # Invert combined color.
+        r, g, b, a = combined_color
+        highlight_color = (1 - r, 1 - g, 1 - b, a)
+        return highlight_color
 
     def draw_construction_guides(self):
         """Draw elements specific to drawable interactive creation."""
         raise NotImplementedError
 
-    def draw_element(self):
+    def draw_fill(self):
         """Draw main drawable object."""
+        raise NotImplementedError
+
+    def draw_outline(self):
+        """Draw outline of main drawable object."""
         raise NotImplementedError
 
     def draw_selection_overlay(self):
@@ -85,11 +95,12 @@ class Drawable(object):
     def draw(self):
         """Draw this drawable as a whole.
 
-        This method interact with `draw_construction_guides`, `draw_element`
-        and `draw_selection_overlay` to draw itself.
+        This method interact with `draw_construction_guides`, `draw_fill`,
+        `draw_outline` and `draw_selection_overlay` to draw itself.
         It ensures that the OpenGL transformation matrix will be untouched.
         It set the colors of the construction guides and selection overlay
-        to the `highlight_color`, and the main element to its `color`.
+        to the `highlight_color`, and the main element to its `fill_color`
+        and `line_color`.
 
         """
         glPushMatrix()
@@ -102,8 +113,14 @@ class Drawable(object):
         glScale(self.resize_vector.x, self.resize_vector.y, 1.0)
 
         glPushMatrix()
-        glColor4fv(self.color)
-        self.draw_element()
+        glColor4fv(self.line_color)
+        # Draw outline first so that it is possible to simulate the outline
+        # effect by drawing overlapping filled objects.
+        self.draw_outline()
+        glPopMatrix()
+        glPushMatrix()
+        glColor4fv(self.fill_color)
+        self.draw_fill()
         glPopMatrix()
 
         if self.selected:
@@ -119,13 +136,25 @@ class Drawable(object):
         gluDisk(self.quadratic, 0, 3, 32, 32)
         glPopMatrix()
 
-    def draw_rectangle_outline(self, corner, opposite_corner):
+    def draw_rectangle_outline(self, corner, opposite_corner, radial_reduction):
         """Helper method to draw a rectangle outline given two opposite corners."""
+        x1, y1, x2, y2 = corner & opposite_corner
+
+        # Make sure x1 <= x2 and y1 <= y2.
+        x1, x2 = sorted((x1, x2))
+        y1, y2 = sorted((y1, y2))
+
+        # Contract boundaries by `radial_reduction`.
+        #x1 += radial_reduction
+        x2 -= radial_reduction
+        #y1 += radial_reduction
+        y2 -= radial_reduction
+
         glBegin(GL_LINE_LOOP)
-        glVertex2f(corner.x, opposite_corner.y)
-        glVertex2f(opposite_corner.x, opposite_corner.y)
-        glVertex2f(opposite_corner.x, corner.y)
-        glVertex2f(corner.x, corner.y)
+        glVertex2f(x1, y2)
+        glVertex2f(x2, y2)
+        glVertex2f(x2, y1)
+        glVertex2f(x1, y1)
         glEnd()
 
     def construct(self, x, y):
@@ -184,8 +213,8 @@ class Drawable(object):
 
 
 class Rectangle(Drawable):
-    def __init__(self, color, corner1, corner2):
-        super(Rectangle, self).__init__(color)
+    def __init__(self, fill_color, line_color, corner1, corner2):
+        super(Rectangle, self).__init__(fill_color, line_color)
         self.corner1, self.corner2 = map(Point._make, (corner1, corner2))
 
     def __contains__(self, (x, y)):
@@ -212,11 +241,30 @@ class Rectangle(Drawable):
         self.draw_small_disk(self.corner1)
         self.draw_small_disk(self.corner2)
 
-    def draw_element(self):
-        glRectf(*(self.corner1 & self.corner2))
+    def _draw_rectangle(self, radial_reduction):
+        x1, y1, x2, y2 = self.corner1 & self.corner2
+
+        # Make sure x1 <= x2 and y1 <= y2.
+        x1, x2 = sorted((x1, x2))
+        y1, y2 = sorted((y1, y2))
+
+        # Contract boundaries by `radial_reduction`.
+        x1 += radial_reduction
+        x2 -= radial_reduction
+        y1 += radial_reduction
+        y2 -= radial_reduction
+
+        # Draw rectangle.
+        glRectf(x1, y1, x2, y2)
+
+    def draw_fill(self):
+        self._draw_rectangle(1.0)
+
+    def draw_outline(self):
+        self._draw_rectangle(0.0)
 
     def draw_selection_overlay(self):
-        self.draw_rectangle_outline(self.corner1, self.corner2)
+        self.draw_rectangle_outline(self.corner1, self.corner2, -1.0)
 
     def construct(self, x, y):
         # Update the second corner position.
@@ -225,8 +273,8 @@ class Rectangle(Drawable):
 
 
 class Ellipse(Drawable):
-    def __init__(self, color, corner1, corner2):
-        super(Ellipse, self).__init__(color)
+    def __init__(self, fill_color, line_color, corner1, corner2):
+        super(Ellipse, self).__init__(fill_color, line_color)
         self.corner1, self.corner2 = map(Point._make, (corner1, corner2))
 
     def __contains__(self, (x, y)):
@@ -262,9 +310,9 @@ class Ellipse(Drawable):
         self.draw_small_disk(self.corner1)
         self.draw_small_disk(self.corner2)
 
-    def draw_element(self):
+    def _draw_ellipse(self, radial_reduction):
         # Compute radius from the x coordinate.
-        radius = abs(self.corner1.x - self.corner2.x) / 2.0
+        radius = abs(self.corner1.x - self.corner2.x) / 2.0 - radial_reduction
 
         # Center the ellipse on its centroid.
         tr_x, tr_y = self.centroid
@@ -279,8 +327,14 @@ class Ellipse(Drawable):
         # Draw filled disk/ellipse.
         gluDisk(self.quadratic, 0.0, radius, int(d_x / 2.0), int(d_y / 2.0))
 
+    def draw_fill(self):
+        self._draw_ellipse(1.0)
+
+    def draw_outline(self):
+        self._draw_ellipse(0.0)
+
     def draw_selection_overlay(self):
-        self.draw_rectangle_outline(self.corner1, self.corner2)
+        self.draw_rectangle_outline(self.corner1, self.corner2, -1.0)
 
     def construct(self, x, y):
         # Update the second corner position.
@@ -289,8 +343,8 @@ class Ellipse(Drawable):
 
 
 class FreeForm(Drawable):
-    def __init__(self, color, start):
-        super(FreeForm, self).__init__(color)
+    def __init__(self, fill_color, line_color, start):
+        super(FreeForm, self).__init__(fill_color, line_color)
         self.points = [Point._make(start)]
 
     def __contains__(self, (x, y)):
@@ -354,7 +408,10 @@ class FreeForm(Drawable):
         self.draw_small_disk(self.points[0])
         self.draw_small_disk(self.points[-1])
 
-    def draw_element(self):
+    def draw_fill(self):
+        pass
+
+    def draw_outline(self):
         glBegin(GL_LINE_STRIP)
         for point in self.points:
             glVertex2f(*point)
@@ -365,7 +422,7 @@ class FreeForm(Drawable):
                          min(p.y for p in self.points))
         bottom_right = Point(max(p.x for p in self.points),
                              max(p.y for p in self.points))
-        self.draw_rectangle_outline(top_left, bottom_right)
+        self.draw_rectangle_outline(top_left, bottom_right, -1.0)
 
     def construct(self, x, y):
         # Add new points to the FreeForm.
