@@ -22,7 +22,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-from config import default
+from config import default, DEBUG
 from toolbar import Toolbar
 
 
@@ -30,16 +30,13 @@ class App(object):
 
     """A simple OpenGL drawing application."""
 
-    def __init__(self, config=default, debug=False):
+    def __init__(self, config=default):
         """Create an instance of a PyRysunek application.
 
         Optional arguments:
         config -- dictionary containing configuration values (see `config.default`)
-        debug -- show debug information in the console during program execution
         """
         self.config = config
-        self.DEBUG = debug
-
         self.width, self.height = self.config.window_size
 
         self.toolbar = Toolbar(self.config.toolbar)
@@ -110,7 +107,7 @@ class App(object):
             elif state == GLUT_UP:
                 self.toolbar.current_tool.mouse_up(x, y, self.context)
 
-        if self.DEBUG:
+        if DEBUG:
             print "<Mouse click event>"
             print "  button=%s, state=%s, x=%s, y=%s" % (button, state, x, y)
             print "  current_tool = %s" % self.toolbar.current_tool
@@ -144,10 +141,10 @@ class App(object):
             temp_file = open(self.config.temp_file, "wb")
             pickle.dump(self.context.objects, temp_file)
             temp_file.close()
-            if self.DEBUG:
+            if DEBUG:
                 print "<Saved objects>"
         except IOError:
-            if self.DEBUG:
+            if DEBUG:
                 print "<Failed to save objects>"
 
     def load(self):
@@ -160,10 +157,10 @@ class App(object):
             temp_file = open(self.config.temp_file, "rb")
             self.context.objects = pickle.load(temp_file)
             temp_file.close()
-            if self.DEBUG:
+            if DEBUG:
                 print "<Load objects>"
         except IOError:
-            if self.DEBUG:
+            if DEBUG:
                 print "<Failed to load objects>"
 
 
@@ -198,11 +195,14 @@ class ObjectList(list):
 
 
 def main():
-    """Main Program"""
-    app = App(debug=True)
+    """Run main program loop."""
+    app = App()
     glutMainLoop()
 
 
 if __name__ == "__main__":
-    import autoreload
-    autoreload.main(main)
+    if DEBUG:
+        import autoreload
+        autoreload.main(main)
+    else:
+        main()
