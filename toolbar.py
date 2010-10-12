@@ -114,12 +114,12 @@ class ColorPicker(object):
         self.config = config
 
         self.x, self.y = config.position
-        self.x += 3 * self.config.padding
-        self.height = self.config.toolbar_height
+        self.x += 3 * config.padding
+        self.height = config.toolbar_height
 
         self._buttons = []
-        self.add_buttons(0, self.config.colors[:len(self.config.colors)/2])
-        self.add_buttons(1, self.config.colors[len(self.config.colors)/2:])
+        self.add_buttons(0, config.colors[:len(config.colors)/2])
+        self.add_buttons(1, config.colors[len(config.colors)/2:])
 
         self.current_fill_color = config.default_fill_color
         self.current_line_color = config.default_line_color

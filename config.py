@@ -36,4 +36,6 @@ default = Config(
             ),
         ),
     ),
+    temp_file = "tmp.ryk",
+    auto_load_on_start = True,
 )

@@ -43,7 +43,6 @@ class Drawable(object):
         self.selected = False
         self.translation_vector = Point(0, 0)
         self.resize_vector = Point(1, 1)
-        self.quadratic = gluNewQuadric()
 
     def __repr__(self):
         return "%s()" % (self.__class__.__name__,)
@@ -153,7 +152,7 @@ class Drawable(object):
         """Helper method to draw a small disk centered in the given point."""
         glPushMatrix()
         glTranslatef(point.x, point.y, 0)
-        gluDisk(self.quadratic, 0, 3, 32, 32)
+        gluDisk(gluNewQuadric(), 0, 3, 32, 32)
         glPopMatrix()
 
     def draw_rectangle_outline(self, corner, opposite_corner, radial_reduction):
@@ -344,7 +343,7 @@ class Ellipse(Drawable):
         glScale(1.0, d_y / d_x, 1.0)
 
         # Draw filled disk/ellipse.
-        gluDisk(self.quadratic, 0.0, radius, int(d_x / 2.0), int(d_y / 2.0))
+        gluDisk(gluNewQuadric(), 0.0, radius, int(d_x / 2.0), int(d_y / 2.0))
 
     def draw_fill(self):
         self._draw_ellipse(1.0)

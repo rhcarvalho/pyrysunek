@@ -9,13 +9,13 @@
 # transparent color (draw without fill or outline)
 # -- bonus --
 # SelectionTool behavior according to the Red Book
-# save / load file
 # group/ungroup objects
 # rotate tool
 # bring to front / send to back
 
 # ** turn off DEBUG and AUTORELOAD **
 
+import cPickle as pickle
 import sys
 
 from OpenGL.GL import *
@@ -49,6 +49,9 @@ class App(object):
         )
 
         self._init_opengl()
+
+        if config.auto_load_on_start:
+            self.load()
 
     def _init_opengl(self):
         """OpenGL initialization commands."""
@@ -118,11 +121,50 @@ class App(object):
         self.toolbar.current_tool.mouse_move(x, y, self.context)
 
     def keyboard(self, key, x, y):
-        # Exit on `ESC` keycode.
         if key == "\x1b":
+            # Exit on `ESC` keycode.
             sys.exit(0)
-        # Propagate event to toolbar.
-        self.toolbar.keyboard(key, x, y)
+        elif key == "\x13":
+            # Ctrl+s
+            self.save()
+        elif key == "\x12":
+            # Ctrl+r
+            self.load()
+        else:
+            # Propagate event to toolbar.
+            self.toolbar.keyboard(key, x, y)
+
+    def save(self):
+        """Save the current objects to disk.
+
+        Fail silently if `self.config.temp_file` fails to open.
+
+        """
+        try:
+            temp_file = open(self.config.temp_file, "wb")
+            pickle.dump(self.context.objects, temp_file)
+            temp_file.close()
+            if self.DEBUG:
+                print "<Saved objects>"
+        except IOError:
+            if self.DEBUG:
+                print "<Failed to save objects>"
+
+    def load(self):
+        """Load objects from disk.
+
+        Fail silently if `self.config.temp_file` fails to open.
+
+        """
+        try:
+            temp_file = open(self.config.temp_file, "rb")
+            self.context.objects = pickle.load(temp_file)
+            temp_file.close()
+            if self.DEBUG:
+                print "<Load objects>"
+        except IOError:
+            if self.DEBUG:
+                print "<Failed to load objects>"
 
 
 class Context(dict):
