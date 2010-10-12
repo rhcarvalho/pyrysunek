@@ -6,6 +6,7 @@
 # TODO:
 # better selection overlay
 # change line size
+# transparent color (draw without fill or outline)
 # -- bonus --
 # SelectionTool behavior according to the Red Book
 # keyboard shortcuts

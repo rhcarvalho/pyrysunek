@@ -23,6 +23,7 @@ class Drawable(object):
         construct(self, x, y)
 
     These methods/properties are provided and may be used as-is by subclasses:
+        denormalized(self, point)
         @property highlight_color
         draw(self)
         draw_small_disk(self, point)
@@ -64,6 +65,25 @@ class Drawable(object):
 
         """
         raise NotImplementedError
+
+    def denormalized(self, point):
+        """"Return denormalized coordinates for `point`.
+
+        The denormalized coordinates are computed by applying the
+        `resize_vector` and `translation_vector`.
+
+        """
+        x, y = point
+
+        # Take into account `resize_vector`.
+        x *= self.resize_vector.x
+        y *= self.resize_vector.y
+        denormalized_point = Point(x, y)
+
+        # Take into account `translation_vector`.
+        denormalized_point += self.translation_vector
+
+        return denormalized_point
 
     @property
     def highlight_color(self):
@@ -218,9 +238,9 @@ class Rectangle(Drawable):
         self.corner1, self.corner2 = map(Point._make, (corner1, corner2))
 
     def __contains__(self, (x, y)):
-        # Take into account `translation_vector`.
-        corner1 = self.corner1 + self.translation_vector
-        corner2 = self.corner2 + self.translation_vector
+        corner1 = self.denormalized(self.corner1)
+        corner2 = self.denormalized(self.corner2)
+
         # Check whether (x, y) is inside the boundaries.
         x_is_in_boundary = sorted((corner1.x, x, corner2.x))[1] == x
         y_is_in_boundary = sorted((corner1.y, y, corner2.y))[1] == y
@@ -278,9 +298,8 @@ class Ellipse(Drawable):
         self.corner1, self.corner2 = map(Point._make, (corner1, corner2))
 
     def __contains__(self, (x, y)):
-        # Take into account `translation_vector`.
-        corner1 = self.corner1 + self.translation_vector
-        corner2 = self.corner2 + self.translation_vector
+        corner1 = self.denormalized(self.corner1)
+        corner2 = self.denormalized(self.corner2)
 
         # Compute ellipse parameters.
         a, b = (corner1 - corner2) / 2.0
@@ -349,15 +368,17 @@ class FreeForm(Drawable):
 
     def __contains__(self, (x, y)):
         """Test whether (x, y) is close enough to this free form.
+
         In other words, that the minimum distance between (x, y) and one of the
-        line segments of this free form is smaller than a threshold."""
+        line segments of this free form is smaller than a threshold.
+
+        """
         threshold = 3
         q = Point(x, y)
         # Iterate over all pairs of sequential points.
         for p1, p2 in zip(self.points, self.points[1:]):
-            # Take into account `translation_vector`.
-            p1 = p1 + self.translation_vector
-            p2 = p2 + self.translation_vector
+            p1 = self.denormalized(p1)
+            p2 = self.denormalized(p2)
 
             if p1 == p2:
                 # If the points are coincident, then compute distance point-to-point.
