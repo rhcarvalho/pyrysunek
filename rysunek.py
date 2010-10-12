@@ -9,7 +9,6 @@
 # transparent color (draw without fill or outline)
 # -- bonus --
 # SelectionTool behavior according to the Red Book
-# keyboard shortcuts
 # save / load file
 # group/ungroup objects
 # rotate tool
@@ -119,9 +118,11 @@ class App(object):
         self.toolbar.current_tool.mouse_move(x, y, self.context)
 
     def keyboard(self, key, x, y):
-        # Exit on `ESC` keycode
+        # Exit on `ESC` keycode.
         if key == "\x1b":
             sys.exit(0)
+        # Propagate event to toolbar.
+        self.toolbar.keyboard(key, x, y)
 
 
 class Context(dict):

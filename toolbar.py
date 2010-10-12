@@ -14,8 +14,16 @@ class Toolbar(object):
         self.x, self.y = config.position
 
         self._buttons = []
-        self.add_buttons(SelectionButton, RectangleButton, EllipseButton,
-            FreeFormButton, ResizeButton, MoveButton, DeleteButton)
+        self._keyboard_shortcuts = {}
+        self.add_buttons(
+            ('s', SelectionButton),
+            ('r', RectangleButton),
+            ('e', EllipseButton),
+            ('f', FreeFormButton),
+            ('x', ResizeButton),
+            ('m', MoveButton),
+            ('d', DeleteButton),
+        )
 
         self.current_tool = self._buttons[1]
 
@@ -53,16 +61,20 @@ class Toolbar(object):
     def height(self):
         return self.config.icon_size + 2 * self.config.padding
 
-    def add_button(self, button_type):
+    def add_button(self, key, button_type):
         size = self.config.icon_size
         padding = self.config.padding
+
         x = self.x + padding + (size + padding) * len(self._buttons)
         y = self.y + padding
-        self._buttons.append(button_type(x, y, size, self.config.selection_color))
+        button = button_type(x, y, size, self.config.selection_color)
 
-    def add_buttons(self, *button_types):
-        for button_type in button_types:
-            self.add_button(button_type)
+        self._buttons.append(button)
+        self._keyboard_shortcuts.update({key: button})
+
+    def add_buttons(self, *args):
+        for key, button_type in args:
+            self.add_button(key, button_type)
 
     def mouse(self, button, state, x, y):
         if state == GLUT_UP:
@@ -73,6 +85,10 @@ class Toolbar(object):
                     self.color_picker.set_line_color(x, y)
             else:
                 self.select(x, y)
+
+    def keyboard(self, key, x, y):
+        if key in self._keyboard_shortcuts:
+            self.current_tool = self._keyboard_shortcuts[key]
 
     def draw(self):
         """Draw the toolbar."""
