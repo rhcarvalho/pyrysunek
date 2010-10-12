@@ -4,10 +4,11 @@
 # http://launchpad.net/pyrysunek
 
 # TODO:
-# better selection overlay
 # change line size
-# transparent color (draw without fill or outline)
 # -- bonus --
+# better selection overlay
+# transparent color (draw without fill or outline)
+# Buttons to Save / Load actions
 # SelectionTool behavior according to the Red Book
 # group/ungroup objects
 # rotate tool
