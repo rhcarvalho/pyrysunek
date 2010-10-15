@@ -1,0 +1,74 @@
+PyRysunek - Quick Guide
+
+PyRysunek is a simple interactive OpenGL 2D vector drawing program.
+It requires of course Python, and these external libraries:
+    - PyOpenGL
+    - Python Imaging Library (PIL)
+    
+Usage is fairly easy. Select a tool in the toolbar with your mouse, and click and
+drag under the drawing area.
+You can draw rectangles, ellipses and free forms.
+You can exit the application at any time by pressing "Esc".
+
+
+1. Selection tool
+
+Use it to define the selected object in the drawing area. The selected object is
+highlighted and is used by other tools, such as move and resize.
+You select objects by clicking on them, and empty your selection by clicking on
+an empty area.
+Keyboard shortcut: "s"
+
+
+2. Rectangle tool
+
+Click on a starting point in the drawing area and drag the mouse while you see
+your new rectangle taking shape. Release the mouse when you're done.
+Keyboard shortcut: "r"
+
+
+3. Ellipse tool
+
+The usage as for the rectangle tool.
+Keyboard shortcut: "e"
+
+
+4. Free form tool
+
+Click on the starting point and freely drag the mouse. After moving through a
+desired path, release the mouse button to finish.
+Keyboard shortcut: "f"
+
+
+5. Resize tool
+
+Resizes the selection. If no object is selected the action will select the object
+under the mouse cursor. Drag your mouse to shrink and enlarge rectangles, ellipses
+and free forms.
+Keyboard shortcut: "x"
+
+
+6. Move tool
+
+As with the resize tool, if there is nothing selected, the object under the mouse
+will be selected. Simple click and drag you mouse to move the current selection
+around the drawing area. Release the mouse button to finish.
+Keyboard shortcut: "m"
+
+
+7. Delete tool
+
+Click on a object to delete it permanently.
+Keyboard shortcut: "d"
+
+
+8. Color Picker
+
+Use your left mouse button to choose the current fill color, and the right mouse
+button to define the line color.
+
+
+9. Saving and loading objects
+
+You can save your current objects by pressing "Ctrl + s".
+You can load a previously saved group of objects by pressing "Ctrl + r".
