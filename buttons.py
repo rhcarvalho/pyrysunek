@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import Image
+try:
+    import Image
+except ImportError:
+    print "A required library is not available: Python Imaging Library (PIL)"
+    raise
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -9,6 +13,9 @@ from tools import *
 
 
 class Button(object):
+
+    """Represent a graphic button."""
+
     def  __init__(self, x, y, size, color):
         self.x = x
         self.y = y
@@ -24,11 +31,19 @@ class Button(object):
         return "%s(x=%s, y=%s, size=%s)" % (self.__class__.__name__, self.x, self.y, self.size)
 
     def draw(self):
+        """Draw itself using OpenGL primitives."""
         glColor4fv(self.color)
         glRectf(self.x, self.y, self.x + self.size, self.y + self.size)
 
 
 class IconicButton(Button):
+
+    """Represent a button with a nice icon.
+
+    Requires PIL.
+
+    """
+
     icon_name = None # Must be defined on subclass
 
     def  __init__(self, x, y, size, color):
@@ -36,12 +51,17 @@ class IconicButton(Button):
 
         # Load an image file as a 2D texture using PIL
         icon_path = "icons/%dx%d/%s.png" % (self.size, self.size, self.icon_name)
-        im = Image.open(icon_path)
-        self.icon_width = im.size[0]
-        self.icon_height = im.size[1]
-        self.icon_image = im.tostring("raw", "RGBA", 0, -1)
+        try:
+            im = Image.open(icon_path)
+            self.icon_width = im.size[0]
+            self.icon_height = im.size[1]
+            self.icon_image = im.tostring("raw", "RGBA", 0, -1)
+        except IOError:
+            print "PyRysunek was unable to load an icon from %s" % icon_path
+            raise
 
     def draw(self):
+        """Draw itself using OpenGL primitives."""
         glEnable(GL_TEXTURE_2D)
         gluBuild2DMipmaps(
             GL_TEXTURE_2D, 3, self.icon_width, self.icon_height,

@@ -5,6 +5,14 @@ from math import hypot
 
 
 class Point(namedtuple('Point', 'x y')):
+
+    """A useful and pragmatic implementation of a Point.
+
+    May also be used as a vector under some circunstances.
+    Refer to the unit tests for examples of usage.
+
+    """
+
     __slots__ = ()
 
     @property

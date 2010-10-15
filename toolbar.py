@@ -8,7 +8,11 @@ from buttons import *
 
 
 class Toolbar(object):
+
+    """A toolbar with buttons and color picker."""
+
     def __init__(self, config):
+        """Create an instance of Toolbar using a given configuration."""
         self.config = config
 
         self.x, self.y = config.position
@@ -62,6 +66,12 @@ class Toolbar(object):
         return self.config.icon_size + 2 * self.config.padding
 
     def add_button(self, key, button_type):
+        """Append a button to the end of the toolbar.
+
+        key -- a keyboard shortcut key for easy access.
+        button_type -- a button-like class from which a new button will be created.
+
+        """
         size = self.config.icon_size
         padding = self.config.padding
 
@@ -73,10 +83,17 @@ class Toolbar(object):
         self._keyboard_shortcuts.update({key: button})
 
     def add_buttons(self, *args):
+        """Mass add buttons.
+
+        Expect as argument a number of (key, button_type) pairs to be passed to
+        the `add_button` method.
+
+        """
         for key, button_type in args:
             self.add_button(key, button_type)
 
     def mouse(self, button, state, x, y):
+        """Handle mouse clicks on the toolbar area."""
         if state == GLUT_UP:
             if (x, y) in self.color_picker:
                 if button == GLUT_LEFT_BUTTON:
@@ -87,6 +104,7 @@ class Toolbar(object):
                 self.select(x, y)
 
     def keyboard(self, key, x, y):
+        """Handle key down events."""
         if key in self._keyboard_shortcuts:
             self.current_tool = self._keyboard_shortcuts[key]
 
@@ -110,7 +128,11 @@ class Toolbar(object):
 
 
 class ColorPicker(object):
+
+    """A customizable Color Picker."""
+
     def __init__(self, config):
+        """Create a new instance using the given configuration."""
         self.config = config
 
         self.x, self.y = config.position
@@ -136,6 +158,14 @@ class ColorPicker(object):
         return (len(self.config.colors) / 2) * (size + padding) + 3 * (padding + size)
 
     def add_button(self, line, pos, color):
+        """Append a (color) button to the color picker.
+
+        line -- zero based index of the line of the color picker where this button will be.
+                Usually 0 or 1.
+        pos -- zero based index of the button within its line.
+        color -- color activated when the button is clicked.
+
+        """
         size = self.config.icon_size
         padding = self.config.padding
         x = self.x + (3 * padding + 3 * size) + (size + padding) * pos
@@ -143,6 +173,12 @@ class ColorPicker(object):
         self._buttons.append(SetColorButton(x, y, size, color))
 
     def add_buttons(self, line, colors):
+        """Mass add buttons.
+
+        Expect as argument the line which will have new buttons, and a sequence
+        of color values specified as a 4-item tuple.
+
+        """
         for pos, color in enumerate(colors):
             self.add_button(line, pos, color)
 
@@ -171,12 +207,14 @@ class ColorPicker(object):
             button.draw()
 
     def set_fill_color(self, x, y):
+        """Set the current fill color to the one of the button at x, y."""
         for button in self._buttons:
             if (x, y) in button:
                 self.current_fill_color = button.color
                 break
 
     def set_line_color(self, x, y):
+        """Set the current line color to the one of the button at x, y."""
         for button in self._buttons:
             if (x, y) in button:
                 self.current_line_color = button.color

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # PyRysunek is a simple vector drawing program using OpenGL.
@@ -19,9 +20,13 @@
 import cPickle as pickle
 import sys
 
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
+try:
+    from OpenGL.GL import *
+    from OpenGL.GLUT import *
+    from OpenGL.GLU import *
+except ImportError:
+    print "A required library is not available: PyOpenGL"
+    raise
 
 from config import default, DEBUG
 from toolbar import Toolbar
@@ -98,7 +103,7 @@ class App(object):
         gluOrtho2D(0.0, w, h, 0.0)
 
     def mouse(self, button, state, x, y):
-        """Callback to handle mouse events."""
+        """Callback to handle mouse click events."""
         if (x, y) in self.toolbar:
             self.toolbar.mouse(button, state, x, y)
         else:
@@ -116,9 +121,16 @@ class App(object):
             print "  objects[-3:] = %s" % self.context.objects[-3:]
 
     def motion(self, x, y):
+        """Callback to handle mouse drag events.
+
+        This method is called by OpenGL/GLUT when a mouse button is pressed
+        and movement occurs.
+
+        """
         self.toolbar.current_tool.mouse_move(x, y, self.context)
 
     def keyboard(self, key, x, y):
+        """Callback to handle key down events."""
         if key == "\x1b":
             # Exit on `ESC` keycode.
             sys.exit(0)
@@ -166,27 +178,39 @@ class App(object):
 
 
 class Context(dict):
+
+    """A Context object holds program execution state which can be passed around."""
+
     def __getattr__(self, name):
+        """Allow item access using attribute access syntax."""
         return self.get(name)
 
     def __setattr__(self, name, value):
+        """Allow item attribution using attribute attribution syntax."""
         return self.__setitem__(name, value)
 
     def __delattr__(self, name):
+        """Allow item deletion using attribute deletion syntax."""
         return self.__delitem__(name)
 
 
 class ObjectList(list):
+
+    """A ObjectList holds a group of objects and allow easy manipulation of them."""
+
     def __init__(self, iterable=()):
+        """Create an ObjectList initialized with items from `iterable`."""
         super(ObjectList, self).__init__(iterable)
         self.selected = None
 
     def select_none(self):
+        """Clear the selection."""
         for obj in self:
             obj.selected = False
         self.selected = None
 
     def select(self, x, y):
+        """Select the topmost object at the given x, y coordinates."""
         self.select_none()
         for obj in reversed(self):
             if (x, y) in obj:
